@@ -1,0 +1,6 @@
+{
+  "name": "Character Color Analyzer",
+  "description": "Aplikasi tes warna karakter interaktif berdasarkan kuesioner psikologi untuk mengungkap kekuatan diri, karir, hobi, gaya belajar, serta dashboard transaksi premium.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
