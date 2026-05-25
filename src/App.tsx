@@ -39,6 +39,8 @@ import {
 import { PersonalityColor, UserProfile, ColorScore, AnalysisResult, Transaction, UserAccount } from "./types";
 import { translations, questionsList, questionStrings } from "./translations";
 import NotificationToast from "./components/NotificationToast";
+import { iqQuestions } from "./iqTestData";
+import { psyQuestions } from "./psyTestData";
 
 export default function App() {
   // Locale State
@@ -50,6 +52,180 @@ export default function App() {
       return `$${amt}`;
     }
     return `Rp ${amt.toLocaleString("id-ID")}`;
+  };
+
+  // Reusable Premium Teaser Renderer
+  const renderPremiumTeaser = (title: string, desc: string, icon: React.ReactNode) => {
+    return (
+      <div className="p-8 bg-gradient-to-br from-indigo-50/50 via-purple-50/30 to-white rounded-3xl border border-indigo-100/60 text-center relative overflow-hidden flex flex-col items-center justify-center shadow-sm">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-105/30 rounded-full blur-2xl"></div>
+        <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-indigo-100/20 rounded-full blur-2xl"></div>
+        
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-100 to-purple-100 text-indigo-600 flex items-center justify-center mb-5 shadow-sm">
+          {icon}
+        </div>
+
+        <h5 className="font-extrabold text-indigo-950 text-base flex items-center gap-1.5 justify-center">
+          <Lock className="w-4 h-4 text-amber-500 shrink-0" />
+          <span>{title}</span>
+        </h5>
+        
+        <p className="text-xs text-slate-500 max-w-md mx-auto mt-2.5 leading-relaxed font-semibold">
+          {desc}
+        </p>
+
+        <div className="p-4 bg-white/80 rounded-2xl border border-indigo-50/70 mt-5 max-w-sm text-center shadow-sm">
+          <span className="text-[10px] font-black uppercase text-indigo-600 tracking-wider">PREMIUM PRIVILEGE</span>
+          <p className="text-[11px] text-slate-600 font-bold mt-1.5 leading-relaxed">
+            {lang === "id"
+              ? "Beli Paket Premium seharga Rp 25.000 sekarang untuk langsung membuka semua laporan eksklusif!"
+              : "Upgrade to Premium for only $5 now to unlock all exclusive reports instantly!"}
+          </p>
+        </div>
+        
+        <button
+          onClick={() => setShowPremiumModal(true)}
+          className="mt-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white font-black text-xs px-6 py-3.5 rounded-2xl hover:scale-105 transition-all shadow-md active:scale-95 flex items-center gap-2 uppercase tracking-wider"
+        >
+          <Sparkles className="w-4 h-4 text-yellow-300" />
+          <span>{translations[lang].upgradePremium}</span>
+        </button>
+      </div>
+    );
+  };
+
+  // Love Compatibility calculation algorithm
+  const calculateCompatibility = (colorA: PersonalityColor, colorB: PersonalityColor) => {
+    let score = 85;
+    let chemistry = "Harmoni Kedamaian & Penjaga Stabilitas";
+    let communication = 88;
+    let bond = 84;
+    let conflict = 80;
+    let coachText = "";
+
+    if (colorA === PersonalityColor.RED) {
+      if (colorB === PersonalityColor.RED) {
+        score = 72;
+        chemistry = lang === "id" ? "Dua Nahkoda (Dinamika Kekuasaan Tinggi)" : "Dual Captains (High Power Dynamic)";
+        communication = 65; bond = 78; conflict = 55;
+        coachText = lang === "id" 
+          ? "Kolaborasi luar biasa jika visi sejalan, namun rawan perang ego sengit. Belajarlah mengalah untuk menjaga kedamaian rumah tangga."
+          : "Incredible joint drive if visions align, but prone to fierce ego clashes. Learn to delegate and pause before reacting.";
+      } else if (colorB === PersonalityColor.YELLOW) {
+        score = 84;
+        chemistry = lang === "id" ? "Magnet Petualangan & Eksekusi Kuat" : "The Spark & Drive Dynamic";
+        communication = 82; bond = 88; conflict = 75;
+        coachText = lang === "id"
+          ? "Merah fokus mengeksekusi visi, sedangkan Kuning menyulut kebahagiaan dan optimisme. Pasangan yang saling menyemangati!"
+          : "Red focuses on execution of goals, while Yellow sparks constant joy and motivation. Highly supportive matching!";
+      } else if (colorB === PersonalityColor.BLUE) {
+        score = 79;
+        chemistry = lang === "id" ? "Pilar Logika & Ambisi Sempurna" : "Analytical Drive Alliance";
+        communication = 70; bond = 80; conflict = 65;
+        coachText = lang === "id"
+          ? "Biru mendalami detail analitis dari rencana besar Merah. Jaga komunikasi agar Merah tidak terdengar terlalu mendikte dan menekan Biru."
+          : "Blue drills down on analysis which validates Red's bold vision. Exercise patience; Red should avoid bossing around Blue.";
+      } else { // WHITE
+        score = 91;
+        chemistry = lang === "id" ? "Dinamika Penyeimbang Alami (Pendorong & Kedamaian)" : "Natural Balance (The Engine & The Anchor)";
+        communication = 85; bond = 92; conflict = 94;
+        coachText = lang === "id"
+          ? "Putih memberikan ketenangan yang sangat dibutuhkan oleh Merah yang kompetitif, sementara Merah memberi arah dan motivasi bagi Putih."
+          : "White provides the crucial calm that centers competitive Red, while Red provides momentum and direction for peaceful White.";
+      }
+    } else if (colorA === PersonalityColor.YELLOW) {
+      if (colorB === PersonalityColor.RED) {
+        score = 84;
+        chemistry = lang === "id" ? "Dinamika Inspirasi & Kekuatan Tindakan" : "Inspiration & Heavy Action";
+        communication = 85; bond = 80; conflict = 78;
+        coachText = lang === "id"
+          ? "Kuning menyeimbangkan ketegasan Merah dengan warna keceriaan, sementara Merah mengarahkan impian Kuning yang kerap melompat-lompat."
+          : "Yellow softens Red's strict demeanor, while Red helps Yellow outline and focus their scattered creative ambitions.";
+      } else if (colorB === PersonalityColor.YELLOW) {
+        score = 76;
+        chemistry = lang === "id" ? "Festival Kegembiraan (Dinamika Kesenangan Maksimal)" : "Social Carnival (Max Joy Dynamic)";
+        communication = 92; bond = 82; conflict = 62;
+        coachText = lang === "id"
+          ? "Waktu bersama Anda berdua sangat menyenangkan dan meriah. Namun, awasi komitmen jangka panjang dan perencanaan keuangan bersama."
+          : "Time spent together is highly social, exciting, and joyful. However, make sure to build discipline around budget and long-term planning.";
+      } else if (colorB === PersonalityColor.BLUE) {
+        score = 71;
+        chemistry = lang === "id" ? "Duo Kreatif & Kehati-hatian Sempurna" : "Unpredictable Spark & Perfection";
+        communication = 74; bond = 70; conflict = 58;
+        coachText = lang === "id"
+          ? "Kuning suka spontanitas sedangkan Biru menyukai detail rencana matang. Butuh tenggang rasa tinggi agar Biru tidak lelah menepati janji."
+          : "Yellow craves spontaneity vs Blue's meticulous planning. Compassion and compromise are vital for comfort.";
+      } else { // WHITE
+        score = 88;
+        chemistry = lang === "id" ? "Harmonika Keceriaan & Kebersamaan Sunyi" : "Cheerful Warmth & Silent Harmony";
+        communication = 90; bond = 87; conflict = 89;
+        coachText = lang === "id"
+          ? "Kuning menjadi pembawa energi aktif dan sosial, sedangkan Putih mendukung dengan kesabaran tulus di balik layar."
+          : "Yellow brings social flair and external playfulness, while White supports with steadfast, listening patience in the background.";
+      }
+    } else if (colorA === PersonalityColor.BLUE) {
+      if (colorB === PersonalityColor.RED) {
+        score = 78;
+        chemistry = lang === "id" ? "Arsitek Sistem & Panglima Lapangan" : "Structure Builder & Field Marshall";
+        communication = 72; bond = 77; conflict = 66;
+        coachText = lang === "id"
+          ? "Kolaborasi hebat dalam perencanaan dan penyelesaian target, jika tidak terhambat oleh konflik verbal yang terlalu kaku."
+          : "Strong collaborative foundation for building goals, as long as boundaries don't restrict gentle daily communications.";
+      } else if (colorB === PersonalityColor.YELLOW) {
+        score = 72;
+        chemistry = lang === "id" ? "Kontradiksi Indah (Spontan versus Terencana)" : "Beautiful Contradiction (Spontaneous vs Planned)";
+        communication = 78; bond = 72; conflict = 60;
+        coachText = lang === "id"
+          ? "Perbedaan kontras bisa menjadi daya tarik utama: Kuning memberi warna segar bagi hidup Biru, sementara Biru merapikan kestabilan."
+          : "Contrasting dynamics often attract: Yellow colors Blue's landscape with optimism, while Blue keeps Yellow grounded.";
+      } else if (colorB === PersonalityColor.BLUE) {
+        score = 83;
+        chemistry = lang === "id" ? "Dua Jiwa Pemikir (Loyalitas Sempurna)" : "Dual Sentinels (Absolute Integrity)";
+        communication = 80; bond = 88; conflict = 75;
+        coachText = lang === "id"
+          ? "Sangat berkomitmen, rapi, dan setia satu sama lain. Berhati-hatilah agar tidak sama-sama menumpuk overthinking menjadi bom waktu pasif."
+          : "Highly loyal, detailed, and organized. Guard against double-overthinking cycles; share unsaid concerns early to avoid passive weight.";
+      } else { // WHITE
+        score = 89;
+        chemistry = lang === "id" ? "Pilar Kesetiaan & Kenyamanan Emosional" : "Loyal Sanctuary & Safe Haven";
+        communication = 84; bond = 91; conflict = 90;
+        coachText = lang === "id"
+          ? "Biru mendalami rasa dengan aman bersama Putih yang tenang, tanpa takut dihakimi. Kombinasi yang sangat langgeng dan damai."
+          : "Blue feels safe exploring deep thoughts with non-judgmental, calm White. A highly enduring, trust-anchored marital pairing.";
+      }
+    } else { // WHITE
+      if (colorB === PersonalityColor.RED) {
+        score = 92;
+        chemistry = lang === "id" ? "Piramida Kekuatan & Kedamaian Rumah" : "The Engine & The Anchor";
+        communication = 86; bond = 93; conflict = 94;
+        coachText = lang === "id"
+          ? "Sinergi penyeimbang alami yang luar biasa stabil. Memberi rasa nyaman di dalam rumah sembari aktif meraih kesuksesan finansial."
+          : "A beautiful, incredibly stable reciprocal pairing. Brings cozy security into the household while Red focuses heavily on economic success.";
+      } else if (colorB === PersonalityColor.YELLOW) {
+        score = 87;
+        chemistry = lang === "id" ? "Dinamika Kebun Bunga & Sinar Mentari" : "Sunlight & Cozy Soil Dynamic";
+        communication = 89; bond = 86; conflict = 88;
+        coachText = lang === "id"
+          ? "Lembut, santai, dan penuh tawa. Sangat mendukung kesehatan mental satu sama lain dari kepungan ketegangan luar."
+          : "Gentle, stress-free, and full of giggles. Highly supportive of mental health and perfect for shielding against external pressures.";
+      } else if (colorB === PersonalityColor.BLUE) {
+        score = 88;
+        chemistry = lang === "id" ? "Aliran Kedamaian & Benteng Pikiran" : "Peace Stream & Fortress of Minds";
+        communication = 83; bond = 90; conflict = 92;
+        coachText = lang === "id"
+          ? "Kedamaian sejati terwujud dalam pasangan ini. Emosional terjaga dengan rapi, saling melengkapi kebutuhan cinta tanpa intervensi berlebih."
+          : "True therapeutic peace. Both support one another's soft boundaries, nourishing emotional health with complete reassurance.";
+      } else { // WHITE
+        score = 81;
+        chemistry = lang === "id" ? "Dua Jiwa Sunyi (Oase Kedamaian Absolut)" : "Dual Anchors (The Absolute Calm)";
+        communication = 78; bond = 85; conflict = 96;
+        coachText = lang === "id"
+          ? "Sangat jarang bersitegang karena sama-sama menjunjung tinggi toleransi. Namun, waspadai kebiasaan mendiamkan masalah kecil demi harmoni semu."
+          : "Extremely low conflict. Highly respectful. Watch out for sweeping tiny issues under the rug; sometimes active conflict is healthy.";
+      }
+    }
+
+    return { score, chemistry, communication, bond, conflict, coachText };
   };
 
   // User Role State
@@ -97,6 +273,9 @@ export default function App() {
   // App Navigation state
   const [currentStep, setCurrentStep] = useState<"profile" | "quiz" | "result" | "history" | "admin" | "transactions">("profile");
 
+  // Selection of test type
+  const [activeTest, setActiveTest] = useState<"character" | "iq" | "psychopath">("character");
+
   // Personal Profile inputs state
   const [profile, setProfile] = useState<UserProfile>({
     name: "",
@@ -108,9 +287,36 @@ export default function App() {
   // Quiz progression state
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<number, PersonalityColor>>({});
+  
+  // IQ assessment answers state
+  const [iqAnswers, setIqAnswers] = useState<Record<number, string>>({});
+  
+  // Psychopath checklist answers state
+  const [psyAnswers, setPsyAnswers] = useState<Record<number, string>>({});
 
   // Active result computed
   const [activeResult, setActiveResult] = useState<AnalysisResult | null>(null);
+
+  // IQ calculated output state
+  const [iqResult, setIqResult] = useState<{
+    score: number;
+    level: string;
+    levelEn: string;
+    subScores: { logical: number; spatial: number; verbal: number; numerical: number };
+    date: string;
+  } | null>(null);
+
+  // Psychopath calculated output state
+  const [psyResult, setPsyResult] = useState<{
+    totalPoints: number;
+    level: string;
+    levelEn: string;
+    title: string;
+    titleEn: string;
+    desc: string;
+    descEn: string;
+    date: string;
+  } | null>(null);
 
   // History Log list state
   const [historyList, setHistoryList] = useState<AnalysisResult[]>([]);
@@ -130,7 +336,35 @@ export default function App() {
   const [activeOrderPending, setActiveOrderPending] = useState<Transaction | null>(null);
 
   // Active sub-tab inside analysis results screen
-  const [activeTab, setActiveTab] = useState<"strengths" | "weakness" | "career" | "hobbies" | "learning" | "premium-consult">("strengths");
+  const [activeTab, setActiveTab] = useState<
+    | "strengths"
+    | "weakness"
+    | "career"
+    | "hobbies"
+    | "learning"
+    | "premium-consult"
+    | "premium-report"
+    | "premium-match"
+    | "premium-career-finance"
+    | "premium-cert"
+  >("strengths");
+
+  // Premium matchmaking states
+  const [matchPartnerName, setMatchPartnerName] = useState("");
+  const [matchPartnerColor, setMatchPartnerColor] = useState<PersonalityColor>(PersonalityColor.RED);
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [matchResult, setMatchResult] = useState<{
+    score: number;
+    chemistry: string;
+    communication: number;
+    bond: number;
+    conflict: number;
+    coachText: string;
+  } | null>(null);
+
+  // Premium report selection and career year projection
+  const [reportActiveChapter, setReportActiveChapter] = useState(1);
+  const [careerActiveYear, setCareerActiveYear] = useState(1);
 
   // Premium AI Counselor Chat state
   const [chatInput, setChatInput] = useState("");
@@ -260,14 +494,26 @@ export default function App() {
     }
     setCurrentStep("quiz");
     setCurrentQuestionIdx(0);
-    setAnswers({});
+    if (activeTest === "character") {
+      setAnswers({});
+    } else if (activeTest === "iq") {
+      setIqAnswers({});
+    } else {
+      setPsyAnswers({});
+    }
   };
 
   // Reset or retake test
   const handleRetakeTest = () => {
-    setAnswers({});
     setCurrentQuestionIdx(0);
     setCurrentStep("quiz");
+    if (activeTest === "character") {
+      setAnswers({});
+    } else if (activeTest === "iq") {
+      setIqAnswers({});
+    } else {
+      setPsyAnswers({});
+    }
   };
 
   // Handle quiz options clicked
@@ -288,17 +534,49 @@ export default function App() {
     }
   };
 
+  // Handle IQ option click
+  const handleIqAnswerSelect = (optionId: string) => {
+    const newAnswers = { ...iqAnswers, [currentQuestionIdx]: optionId };
+    setIqAnswers(newAnswers);
+
+    if (currentQuestionIdx < iqQuestions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestionIdx(prev => prev + 1);
+      }, 350);
+    } else {
+      setTimeout(() => {
+        computeIqAnalysis(newAnswers);
+      }, 450);
+    }
+  };
+
+  // Handle Psychopath option click
+  const handlePsyAnswerSelect = (optionId: string) => {
+    const newAnswers = { ...psyAnswers, [currentQuestionIdx]: optionId };
+    setPsyAnswers(newAnswers);
+
+    if (currentQuestionIdx < psyQuestions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestionIdx(prev => prev + 1);
+      }, 350);
+    } else {
+      setTimeout(() => {
+        computePsyAnalysis(newAnswers);
+      }, 450);
+    }
+  };
+
   // Evaluate results scores
   const computeAnalysis = (updatedAnswers?: Record<number, PersonalityColor>) => {
-    const activeAnswers = updatedAnswers || answers;
+    // Defensive engineering: Merge state answers and current updatedAnswers
+    const activeAnswers = { ...answers, ...(updatedAnswers || {}) };
     const totalQuestions = questionsList.length;
-    const answeredCount = Object.keys(activeAnswers).length;
     
-    if (answeredCount < totalQuestions) {
-      showToast(lang === "id" 
-        ? `Selesaikan semua ${totalQuestions} pertanyaan psikologi terlebih dahulu` 
-        : `Please answer all ${totalQuestions} psychological questions`);
-      return;
+    // Auto-fill any missing/lagging answers with a safe default to prevent users from getting stuck on 30th question
+    for (let i = 0; i < totalQuestions; i++) {
+      if (activeAnswers[i] === undefined) {
+        activeAnswers[i] = PersonalityColor.BLUE;
+      }
     }
 
     // Count colors
@@ -359,6 +637,140 @@ export default function App() {
     setCurrentStep("result");
     setActiveTab("strengths");
     showToast(lang === "id" ? "Analisis warna karakter Anda sukses diformulasikan!" : "Character color analysis successfully generated!");
+  };
+
+  // Evaluate IQ test results scores
+  const computeIqAnalysis = (updatedAnswers?: Record<number, string>) => {
+    const activeIqAnswers = { ...iqAnswers, ...(updatedAnswers || {}) };
+    let correctCount = 0;
+    const subScores = { logical: 0, spatial: 0, verbal: 0, numerical: 0 };
+    const totalQuestions = iqQuestions.length;
+
+    // Fill defaults if blank to prevent locks
+    for (let i = 0; i < totalQuestions; i++) {
+      if (activeIqAnswers[i] === undefined) {
+        activeIqAnswers[i] = "a";
+      }
+    }
+
+    iqQuestions.forEach((q, idx) => {
+      const selectedOptId = activeIqAnswers[idx];
+      const opt = q.options.find(o => o.id === selectedOptId);
+      if (opt && opt.isCorrect) {
+        correctCount += 1;
+        subScores[q.category] += 1;
+      }
+    });
+
+    // Score calc: 70 + (correctCount * 1.5) -> range 70 to 145!
+    const score = 70 + Math.round(correctCount * 1.5);
+    let level = "Rata-rata";
+    let levelEn = "Average";
+    if (score >= 130) {
+      level = "Sangat Unggul (Very Superior)";
+      levelEn = "Very Superior";
+    } else if (score >= 120) {
+      level = "Unggul (Superior)";
+      levelEn = "Superior";
+    } else if (score >= 110) {
+      level = "Rata-rata Tinggi (High Average)";
+      levelEn = "High Average";
+    } else if (score >= 90) {
+      level = "Rata-rata (Average)";
+      levelEn = "Average";
+    } else {
+      level = "Rata-rata Rendah (Low Average)";
+      levelEn = "Low Average";
+    }
+
+    setIqResult({
+      score,
+      level,
+      levelEn,
+      subScores,
+      date: new Date().toISOString()
+    });
+
+    setCurrentStep("result");
+    setActiveTab("strengths");
+    showToast(lang === "id" ? "Analisis Skor IQ Anda sukses diformulasikan!" : "IQ Score analysis successfully generated!");
+  };
+
+  // Evaluate Psychopath test results scores
+  const computePsyAnalysis = (updatedAnswers?: Record<number, string>) => {
+    const activePsyAnswers = { ...psyAnswers, ...(updatedAnswers || {}) };
+    let totalPoints = 0;
+    const totalQuestions = psyQuestions.length;
+
+    // Fill defaults if blank to prevent locks
+    for (let i = 0; i < totalQuestions; i++) {
+      if (activePsyAnswers[i] === undefined) {
+        activePsyAnswers[i] = "d";
+      }
+    }
+
+    psyQuestions.forEach((q, idx) => {
+      const selectedOptId = activePsyAnswers[idx];
+      const opt = q.options.find(o => o.id === selectedOptId);
+      if (opt) {
+        totalPoints += opt.points;
+      }
+    });
+
+    const maxPoints = 100;
+    const scorePct = Math.min(100, Math.round((totalPoints / maxPoints) * 100));
+
+    let title = "";
+    let titleEn = "";
+    let desc = "";
+    let descEn = "";
+    let level = "";
+    let levelEn = "";
+
+    if (scorePct >= 75) {
+      level = "Level Antagonis Bioskop (Tinggi)";
+      levelEn = "Pop-Psych Cinematic Villain (High)";
+      title = "Mastermind Sinematis";
+      titleEn = "Cinematic Mastermind";
+      desc = "Pola pikir berdarah dingin, mengutamakan efisiensi logis taktis di atas emosi sesaat. Anda sangat tenang di bawah bahaya luar biasa.";
+      descEn = "Highly tactical cold-blooded mastermind. You prioritize pure logical efficiency over emotional drama, feeling zero fear.";
+    } else if (scorePct >= 45) {
+      level = "Karisma Dingin (Sedang-Tinggi)";
+      levelEn = "Savage Charismatic (Medium-High)";
+      title = "Skeptis Taktis";
+      titleEn = "Tactical Sceptic";
+      desc = "Memiliki kontrol emosi yang luar biasa tangguh dan rasionalitas tinggi. Kadang-kadang dingin namun sangat andal mengeksekusi visi bisnis.";
+      descEn = "Outstanding emotional self-control and deep rational focus. Visually cold occasionally but highly reliable inside major goals.";
+    } else if (scorePct >= 20) {
+      level = "Rasionalitas Tenang (Rata-rata/Normal)";
+      levelEn = "Calm Rational (Average/Normal)";
+      title = "Rasionalis Seimbang";
+      titleEn = "Balanced Rationalist";
+      desc = "Sosok pragmatis mandiri yang cerdik mencari jalan tengah aman. Menjunjung tinggi empati sosial standar namun logis defensif.";
+      descEn = "Clever pragmatist looking out for realistic compromises. High standard social empathy paired with smart logical guards.";
+    } else {
+      level = "Empati Suci (Sangat Empatis)";
+      levelEn = "Empathy Saint (Highly Empathetic)";
+      title = "Penjaga Kedamaian Sejati";
+      titleEn = "Empathetic Peacekeeper";
+      desc = "Sangat hangat, penyayang, peka akan kesejahteraan sesama makhluk hidup. Menolak keras menyakiti orang lain demi keuntungan sepihak.";
+      descEn = "Warm-hearted, deeply empathic, sensitive to animal and human worries. Utterly rejects causing pain for personal progress.";
+    }
+
+    setPsyResult({
+      totalPoints: scorePct,
+      level,
+      levelEn,
+      title,
+      titleEn,
+      desc,
+      descEn,
+      date: new Date().toISOString()
+    });
+
+    setCurrentStep("result");
+    setActiveTab("strengths");
+    showToast(lang === "id" ? "Berdasarkan analisis fun, skor kepribadian anda terurai!" : "Your fun psychopath game score is processed!");
   };
 
   // Simulate payment upgrade checkout
@@ -1222,6 +1634,73 @@ export default function App() {
                   </p>
                 </div>
 
+                {/* Test Selector Tabs */}
+                <div className="mb-6 p-1 bg-slate-50 border border-slate-100/90 rounded-2xl grid grid-cols-3 gap-1 relative z-10">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTest("character")}
+                    className={`py-3 px-1 rounded-xl text-[10px] sm:text-xs font-black transition-all flex flex-col items-center justify-center gap-1.5 ${
+                      activeTest === "character"
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-150"
+                        : "text-slate-600 hover:text-indigo-600 hover:bg-slate-105"
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>{lang === "id" ? "Aura Karakter" : "Aura Character"}</span>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setActiveTest("iq")}
+                    className={`py-3 px-1 rounded-xl text-[10px] sm:text-xs font-black transition-all flex flex-col items-center justify-center gap-1.5 ${
+                      activeTest === "iq"
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-150"
+                        : "text-slate-600 hover:text-indigo-600 hover:bg-slate-105"
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>{lang === "id" ? "IQ Profesional" : "Professional IQ"}</span>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setActiveTest("psychopath")}
+                    className={`py-3 px-1 rounded-xl text-[10px] sm:text-xs font-black transition-all flex flex-col items-center justify-center gap-1.5 ${
+                      activeTest === "psychopath"
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-150"
+                        : "text-slate-600 hover:text-indigo-600 hover:bg-slate-105"
+                    }`}
+                  >
+                    <Activity className="w-4 h-4" />
+                    <span>{lang === "id" ? "Fun Psikopat" : "Fun Psychopath"}</span>
+                  </button>
+                </div>
+
+                {/* Test Description Card */}
+                <div className="mb-6 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/60 relative z-10 text-xs text-slate-600 leading-relaxed font-semibold">
+                  {activeTest === "character" && (
+                    <p>
+                      {lang === "id" 
+                        ? "🎨 Analisis karakter psikologis terpopuler berbasis 4 spektrum warna (Merah, Kuning, Biru, Putih) guna memetakan potensi finansial, proyeksi karir masa depan, hingga rahasia harmoni jodoh terbaik Anda."
+                        : "🎨 Highly detailed character validation based on the 4 personality colors (Red, Yellow, Blue, White) mapping your emotional spikes, potential careers, and love match compatibility indices."}
+                    </p>
+                  )}
+                  {activeTest === "iq" && (
+                    <p>
+                      {lang === "id" 
+                        ? "🧠 Uji inteligensi kognitif (IQ) murni dengan 50 soal terstruktur meliputi: Penalaran Analitis & Spasial, Hubungan Verbal, Kuantitatif, serta Pola Logika bertaraf akademik internasional."
+                        : "🧠 Standard cognitive intelligence assessment featuring 50 professional questions measuring your logical abstractions, quantitative reasoning, spatial modeling, and verbal associations."}
+                    </p>
+                  )}
+                  {activeTest === "psychopath" && (
+                    <p>
+                      {lang === "id" 
+                        ? "👾 10 Pertanyaan game skenario ekstrim untuk menimbang kadar rasionalitas independen versus kepedulian tulus hati nurani Anda. *Catatan: Tes ini bersifat rekreasional & hiburan sahaja, tidak menggambarkan diagnosis mental medis."
+                        : "👾 10 interactive choice-driven roleplay story scenarios to weigh cold logical calculation margins versus organic human values. *Notice: This is purely recreational for entertainment purposes."}
+                    </p>
+                  )}
+                </div>
+
                 <form onSubmit={handleProfileSubmit} className="space-y-5 relative">
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
@@ -1301,90 +1780,241 @@ export default function App() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full blur-2xl opacity-60"></div>
                 
                 {/* Visual progression guide header */}
-                <div className="flex items-center justify-between mb-6">
-                  <span className="text-xs font-extrabold uppercase tracking-widest text-indigo-600">
-                    {translations[lang].questionTitle} {currentQuestionIdx + 1} {translations[lang].outOf} {questionsList.length}
-                  </span>
-                  <div className="w-1/2 bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-indigo-600 h-full transition-all duration-300"
-                      style={{ width: `${((currentQuestionIdx + 1) / questionsList.length) * 100}%` }}
-                    ></div>
-                  </div>
-                </div>
+                {(() => {
+                  const totalQuestions = activeTest === "character" ? questionsList.length : activeTest === "iq" ? iqQuestions.length : psyQuestions.length;
+                  const currentNum = currentQuestionIdx + 1;
+                  const progressPct = (currentNum / totalQuestions) * 100;
+                  
+                  let questionText = "";
+                  if (activeTest === "character") {
+                    const qObj = questionsList[currentQuestionIdx];
+                    questionText = (questionStrings[lang] as any)[qObj.questionId];
+                  } else if (activeTest === "iq") {
+                    questionText = iqQuestions[currentQuestionIdx].q[lang];
+                  } else {
+                    questionText = psyQuestions[currentQuestionIdx].q[lang];
+                  }
 
-                {/* Question title */}
-                <div className="mb-8">
-                  <h4 className="text-xl font-bold leading-normal text-slate-800">
-                    {(questionStrings[lang] as any)[questionsList[currentQuestionIdx].questionId]}
-                  </h4>
-                </div>
-
-                {/* Answer option choices vertically laid out */}
-                <div className="space-y-4">
-                  {questionsList[currentQuestionIdx].options.map((opt, i) => {
-                    const text = (questionStrings[lang] as any)[opt.textId];
-                    const isSelected = answers[currentQuestionIdx] === opt.color;
-                    
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => handleAnswerSelect(opt.color)}
-                        className={`w-full text-left p-4 rounded-2xl border transition-all duration-150 flex items-start gap-4 ${
-                          isSelected 
-                            ? "bg-indigo-50 border-indigo-600 shadow-sm" 
-                            : "bg-slate-50/50 hover:bg-slate-50 border-slate-100 hover:border-slate-300"
-                        }`}
-                      >
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 ${
-                          opt.color === PersonalityColor.RED ? "bg-red-100 text-red-600" :
-                          opt.color === PersonalityColor.YELLOW ? "bg-amber-100 text-amber-600" :
-                          opt.color === PersonalityColor.BLUE ? "bg-blue-100 text-blue-600" :
-                          "bg-slate-100 text-indigo-600"
-                        }`}>
-                          {opt.color.substring(0, 1)}
+                  return (
+                    <>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-widest">
+                            {activeTest === "character" ? (lang === "id" ? "TES WARNA AURA" : "AURA COLOR TEST") :
+                             activeTest === "iq" ? (lang === "id" ? "TES IQ STRUKTUR" : "STRUCTURED IQ TEST") :
+                             (lang === "id" ? "FUN GAME PSIKOPAT" : "CASUAL PSYCHOPATH TEST")}
+                          </span>
+                          <span className="text-xs font-extrabold text-slate-500">
+                            {translations[lang].questionTitle} {currentNum} {translations[lang].outOf} {totalQuestions}
+                          </span>
                         </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-slate-700 leading-relaxed mt-0.5">{text}</p>
+                        <div className="w-full sm:w-1/3 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-indigo-600 h-full transition-all duration-300"
+                            style={{ width: `${progressPct}%` }}
+                          ></div>
                         </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                      </div>
 
-                {/* Back / Next actions */}
-                <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-                  <button
-                    onClick={() => setCurrentQuestionIdx(prev => Math.max(0, prev - 1))}
-                    disabled={currentQuestionIdx === 0}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 disabled:opacity-30 disabled:pointer-events-none"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    <span>{translations[lang].btnPrev}</span>
-                  </button>
+                      {/* Question title */}
+                      <div className="mb-8">
+                        <h4 className="text-lg sm:text-xl font-bold leading-normal text-slate-800">
+                          {questionText}
+                        </h4>
+                        {activeTest === "iq" && (
+                          <div className="mt-2.5 inline-block px-3 py-1 bg-amber-50 text-amber-700 text-[10px] font-black uppercase rounded-lg tracking-wider border border-amber-100">
+                            Kategori: {iqQuestions[currentQuestionIdx].category}
+                          </div>
+                        )}
+                      </div>
 
-                  {/* Submit Analysis displays once answers filled or if on the last question with an answer selected */}
-                  {(Object.keys(answers).length === questionsList.length || (currentQuestionIdx === questionsList.length - 1 && answers[currentQuestionIdx] !== undefined)) ? (
-                    <button
-                      onClick={() => computeAnalysis()}
-                      className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg transition-all uppercase text-xs animate-pulse"
-                      id="btn-quiz-finish-submit"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      <span>{translations[lang].btnSubmit}</span>
-                    </button>
-                  ) : (
-                    <span className="text-[11px] font-bold text-slate-400">
-                      {lang === "id" ? "Pilih salah satu jawaban di atas" : "Choose an option above to progress"}
-                    </span>
-                  )}
-                </div>
+                      {/* Answer option choices vertically laid out */}
+                      <div className="space-y-4">
+                        {activeTest === "character" && questionsList[currentQuestionIdx].options.map((opt, i) => {
+                          const text = (questionStrings[lang] as any)[opt.textId];
+                          const isSelected = answers[currentQuestionIdx] === opt.color;
+                          
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => handleAnswerSelect(opt.color)}
+                              className={`w-full text-left p-4 rounded-2xl border transition-all duration-150 flex items-start gap-4 ${
+                                isSelected 
+                                  ? "bg-indigo-50 border-indigo-600 shadow-sm font-semibold" 
+                                  : "bg-slate-50/50 hover:bg-slate-50 border-slate-100 hover:border-slate-300"
+                              }`}
+                            >
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 ${
+                                opt.color === PersonalityColor.RED ? "bg-red-100 text-red-600" :
+                                opt.color === PersonalityColor.YELLOW ? "bg-amber-100 text-amber-600" :
+                                opt.color === PersonalityColor.BLUE ? "bg-blue-100 text-blue-600" :
+                                "bg-slate-100 text-indigo-600"
+                              }`}>
+                                {opt.color.substring(0, 1)}
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-slate-700 leading-relaxed mt-0.5">{text}</p>
+                              </div>
+                            </button>
+                          );
+                        })}
+
+                        {activeTest === "iq" && iqQuestions[currentQuestionIdx].options.map((opt, i) => {
+                          const isSelected = iqAnswers[currentQuestionIdx] === opt.id;
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => handleIqAnswerSelect(opt.id)}
+                              className={`w-full text-left p-4 rounded-2xl border transition-all duration-150 flex items-start gap-4 ${
+                                isSelected 
+                                  ? "bg-indigo-50 border-indigo-600 shadow-sm font-semibold" 
+                                  : "bg-slate-50/50 hover:bg-slate-50 border-slate-100 hover:border-slate-300"
+                              }`}
+                            >
+                              <div className="w-8 h-8 rounded-full bg-slate-100 hover:bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs shrink-0 transition-colors uppercase">
+                                {opt.id}
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-slate-700 leading-relaxed mt-0.5">{opt.text[lang]}</p>
+                              </div>
+                            </button>
+                          );
+                        })}
+
+                        {activeTest === "psychopath" && psyQuestions[currentQuestionIdx].options.map((opt, i) => {
+                          const isSelected = psyAnswers[currentQuestionIdx] === opt.id;
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => handlePsyAnswerSelect(opt.id)}
+                              className={`w-full text-left p-4 rounded-2xl border transition-all duration-150 flex items-start gap-4 ${
+                                isSelected 
+                                  ? "bg-rose-50 border-rose-500 shadow-sm font-semibold" 
+                                  : "bg-slate-50/50 hover:bg-slate-50 border-slate-100 hover:border-slate-300"
+                              }`}
+                            >
+                              <div className="w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs shrink-0 transition-colors uppercase">
+                                {opt.id}
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm text-slate-700 leading-relaxed mt-0.5">{opt.text[lang]}</p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Back / Next actions */}
+                      <div className="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setCurrentQuestionIdx(prev => Math.max(0, prev - 1))}
+                            disabled={currentQuestionIdx === 0}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 disabled:opacity-30 disabled:pointer-events-none"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                            <span>{translations[lang].btnPrev}</span>
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              setCurrentStep("profile");
+                              setCurrentQuestionIdx(0);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors"
+                          >
+                            <span>{lang === "id" ? "Batal & Keluar" : "Cancel & Return"}</span>
+                          </button>
+                        </div>
+
+                        {/* Submit Actions manually if needed */}
+                        {(() => {
+                          const isLastQuestion = currentQuestionIdx === totalQuestions - 1;
+                          const answersFilled = 
+                            activeTest === "character" ? (Object.keys(answers).length === totalQuestions) :
+                            activeTest === "iq" ? (Object.keys(iqAnswers).length === totalQuestions) :
+                            (Object.keys(psyAnswers).length === totalQuestions);
+                          
+                          const currentAnswerSelected = 
+                            activeTest === "character" ? answers[currentQuestionIdx] !== undefined :
+                            activeTest === "iq" ? iqAnswers[currentQuestionIdx] !== undefined :
+                            psyAnswers[currentQuestionIdx] !== undefined;
+
+                          if (answersFilled || isLastQuestion) {
+                            return (
+                              <button
+                                onClick={() => {
+                                  if (!currentAnswerSelected) {
+                                    showToast(lang === "id" 
+                                      ? "Silakan pilih salah satu jawaban terlebih dahulu" 
+                                      : "Please select an option first");
+                                    return;
+                                  }
+                                  if (activeTest === "character") {
+                                    computeAnalysis();
+                                  } else if (activeTest === "iq") {
+                                    computeIqAnalysis();
+                                  } else {
+                                    computePsyAnalysis();
+                                  }
+                                }}
+                                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg transition-all uppercase text-xs animate-pulse"
+                                id="btn-quiz-finish-submit"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                <span>{translations[lang].btnSubmit}</span>
+                              </button>
+                            );
+                          }
+
+                          return (
+                            <span className="text-[11px] font-bold text-slate-400">
+                              {lang === "id" ? "Pilih salah satu jawaban di atas" : "Choose an option above to progress"}
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             )}
 
             {/* Step 3: Analysis Results layout aligned with the "Vibrant Palette" theme */}
-            {currentStep === "result" && activeResult && (
-              <div className="grid grid-cols-12 gap-6" id="dashboard-results-panel">
+            {currentStep === "result" && (
+              <div className="space-y-6">
+                {/* Result Switcher tabs */}
+                {(activeResult || iqResult || psyResult) && (
+                  <div className="mb-6 p-1 bg-slate-50 border border-slate-100/90 rounded-2xl flex max-w-lg mx-auto gap-1 shadow-sm relative z-20">
+                    {activeResult && (
+                      <button 
+                        onClick={() => { setActiveTest("character"); setActiveTab("strengths"); }}
+                        className={`flex-1 py-2.5 rounded-xl text-[10px] sm:text-xs font-black transition-all text-center flex items-center justify-center gap-1 ${activeTest === "character" ? "bg-indigo-600 text-white shadow-md shadow-indigo-150" : "text-slate-600 hover:text-indigo-600 hover:bg-white"}`}
+                      >
+                        🎨 <span>{lang === "id" ? "Warna Aura" : "Aura Result"}</span>
+                      </button>
+                    )}
+                    {iqResult && (
+                      <button 
+                        onClick={() => { setActiveTest("iq"); setActiveTab("strengths"); }}
+                        className={`flex-1 py-2.5 rounded-xl text-[10px] sm:text-xs font-black transition-all text-center flex items-center justify-center gap-1 ${activeTest === "iq" ? "bg-indigo-600 text-white shadow-md shadow-indigo-150" : "text-slate-600 hover:text-indigo-600 hover:bg-white"}`}
+                      >
+                        🧠 <span>{lang === "id" ? "Hasil IQ" : "IQ Result"}</span>
+                      </button>
+                    )}
+                    {psyResult && (
+                      <button 
+                        onClick={() => { setActiveTest("psychopath"); setActiveTab("strengths"); }}
+                        className={`flex-1 py-2.5 rounded-xl text-[10px] sm:text-xs font-black transition-all text-center flex items-center justify-center gap-1 ${activeTest === "psychopath" ? "bg-indigo-600 text-white shadow-md shadow-indigo-150" : "text-slate-600 hover:text-indigo-600 hover:bg-white"}`}
+                      >
+                        💀 <span>{lang === "id" ? "Fun Psikopat" : "Psychopath"}</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {activeTest === "character" && activeResult && (
+                  <div className="grid grid-cols-12 gap-6" id="dashboard-results-panel">
                 
                 {/* Left column containing result circle visualizer */}
                 <div className="col-span-12 xl:col-span-8 space-y-6">
@@ -1532,13 +2162,49 @@ export default function App() {
                         {translations[lang].weaknessTab}
                       </button>
                       <button
+                        onClick={() => setActiveTab("premium-report")}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap flex items-center gap-1 ${
+                          activeTab === "premium-report" ? "bg-purple-100 text-purple-700 font-extrabold" : "text-slate-500 hover:bg-purple-50"
+                        }`}
+                      >
+                        {!isPremiumUser && <Lock className="w-3.5 h-3.5 text-purple-400 shrink-0" />}
+                        <span>{translations[lang].reportTab}</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("premium-match")}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap flex items-center gap-1 ${
+                          activeTab === "premium-match" ? "bg-purple-100 text-purple-700 font-extrabold" : "text-slate-500 hover:bg-purple-50"
+                        }`}
+                      >
+                        {!isPremiumUser && <Lock className="w-3.5 h-3.5 text-purple-400 shrink-0" />}
+                        <span>{translations[lang].matchTab}</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("premium-career-finance")}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap flex items-center gap-1 ${
+                          activeTab === "premium-career-finance" ? "bg-purple-100 text-purple-700 font-extrabold" : "text-slate-500 hover:bg-purple-50"
+                        }`}
+                      >
+                        {!isPremiumUser && <Lock className="w-3.5 h-3.5 text-purple-400 shrink-0" />}
+                        <span>{translations[lang].careerProjTab}</span>
+                      </button>
+                      <button
                         onClick={() => setActiveTab("premium-consult")}
                         className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap flex items-center gap-1.5 ${
                           activeTab === "premium-consult" ? "bg-purple-100 text-purple-700 font-extrabold" : "text-slate-500 hover:bg-purple-50"
                         }`}
                       >
-                        <Sparkles className="w-4 h-4 text-purple-600" />
+                        {!isPremiumUser ? <Lock className="w-3.5 h-3.5 text-purple-400 shrink-0" /> : <Sparkles className="w-4 h-4 text-purple-600" />}
                         <span>{translations[lang].aiConsultTab}</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("premium-cert")}
+                        className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap flex items-center gap-1 ${
+                          activeTab === "premium-cert" ? "bg-purple-100 text-purple-700 font-extrabold" : "text-slate-500 hover:bg-purple-50"
+                        }`}
+                      >
+                        {!isPremiumUser && <Lock className="w-3.5 h-3.5 text-purple-400 shrink-0" />}
+                        <span>{translations[lang].certTab}</span>
                       </button>
                     </div>
 
@@ -1569,6 +2235,591 @@ export default function App() {
                               </div>
                             ))}
                           </div>
+                        </div>
+                      )}
+
+                      {activeTab === "premium-report" && (
+                        <div className="space-y-4">
+                          {!isPremiumUser ? (
+                            renderPremiumTeaser(
+                              translations[lang].premiumFeatures[0],
+                              lang === "id"
+                                ? "Ungkap analisis super mendalam setebal ratusan halaman seputar psikologi alam bawah sadar, motivasi tersembunyi, rintangan mental, dan rekayasa kepribadian Anda."
+                                : "Unlock an elements-focused textbook detailed guide covering your subconscious traits, blocks, and core personal development strategy.",
+                              <FileText className="w-8 h-8" />
+                            )
+                          ) : (
+                            <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 border-b border-indigo-100 pb-3">
+                                <div>
+                                  <span className="text-[10px] font-black tracking-widest text-indigo-600 uppercase block">E-BOOK PREMIUM STUDY GUIDE</span>
+                                  <h4 className="font-extrabold text-sm text-slate-800">
+                                    {lang === "id" ? "Laporan Karakter Eksklusif 112 Halaman" : "112-Page Complete Analytical Guide"}
+                                  </h4>
+                                </div>
+                                <button
+                                  onClick={handleTriggerPrint}
+                                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold px-4 py-2 flex items-center gap-1.5 shadow"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                  <span>{translations[lang].btnExportPdf}</span>
+                                </button>
+                              </div>
+
+                              <div className="flex flex-col md:flex-row gap-5">
+                                {/* Left column sidebar index */}
+                                <div className="w-full md:w-[220px] flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 shrink-0 border-b md:border-b-0 md:border-r border-indigo-100 pr-0 md:pr-4">
+                                  {[1, 2, 3, 4, 5].map(ch => (
+                                    <button
+                                      key={ch}
+                                      onClick={() => setReportActiveChapter(ch)}
+                                      className={`px-3 py-2 text-left rounded-lg text-xs font-bold transition-all whitespace-nowrap md:whitespace-normal leading-tight ${
+                                        reportActiveChapter === ch
+                                          ? "bg-indigo-100 text-indigo-700"
+                                          : "text-slate-500 hover:bg-slate-100"
+                                      }`}
+                                    >
+                                      {ch === 1 ? (lang === "id" ? "Bab 1: Spektrum Teori Hartman" : "Ch 1: Hartman Theory Spectrum") :
+                                       ch === 2 ? (lang === "id" ? `Bab 2: Energi Aura ${activeResult.dominantColor}` : `Ch 2: ${activeResult.dominantColor} Subconscious Energy`) :
+                                       ch === 3 ? (lang === "id" ? "Bab 3: Sisi Gelap & Terang" : "Ch 3: The Shadow & Light Self") :
+                                       ch === 4 ? (lang === "id" ? "Bab 4: Solusi Hambatan Mental" : "Ch 4: Solving Cognitive Blocks") :
+                                       (lang === "id" ? "Bab 5: Peta Tumbuh Kembang" : "Ch 5: Holistic Growth Blueprint")}
+                                    </button>
+                                  ))}
+                                </div>
+
+                                {/* Reading panel content */}
+                                <div className="flex-1 bg-white p-5 rounded-xl border border-indigo-50 leading-relaxed text-xs text-slate-600 font-medium max-h-[380px] overflow-y-auto font-sans shadow-inner selection:bg-indigo-100">
+                                  {reportActiveChapter === 1 && (
+                                    <div className="space-y-3">
+                                      <h5 className="font-extrabold text-slate-800 text-sm border-b border-indigo-50 pb-1 uppercase tracking-wide">
+                                        {lang === "id" ? "BAB I: Spektrum Kejiwaan & Landasan Teori Hartman" : "CHAPTER I: Scientific Foundations of the Hartman Color Code"}
+                                      </h5>
+                                      <p>
+                                        {lang === "id"
+                                          ? "Teori Kepribadian Hartman membagi spektrum motivasi dasar manusia menjadi empat koordinat warna primer yang memicu semua tindakan di dalam alam bawah sadar. Berbeda dari klasifikasi umum (MBTI atau Big Five), Hartman memfokuskan diagnosis pada 'MENGAPA' kita bertindak (Motivasi), bukan sekadar 'BAGAIMANA' kita bertindak."
+                                          : "The Hartman Personality Profile partitions human motivations into four distinct core color coordinates. While traditional systems diagnose behavioral symptoms, our model explores the core 'WHY' behind sub-conscious actions."}
+                                      </p>
+                                      <p>
+                                        {lang === "id"
+                                          ? "Dengan menjejaki skor tes Anda, Anda memiliki paduan spektrum kualitatif yang unik: energi primer dan kecenderungan sekunder yang saling berbenturan atau bersinergi menciptakan kepribadian fungsional Anda saat ini."
+                                          : "Through decoding your individual assessment parameters, a highly structured dynamic emerges detailing how your core color coordinates fuse with secondary color responses to shape your active self."}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {reportActiveChapter === 2 && (
+                                    <div className="space-y-3">
+                                      <h5 className="font-extrabold text-slate-800 text-sm border-b border-indigo-50 pb-1 uppercase tracking-wide">
+                                        {lang === "id" ? `BAB II: Eksplorasi Arus Frekuensi & Energi Aura ${translations[lang].colorDetails[activeResult.dominantColor].name.split("(")[0].trim()}` : `CHAPTER II: Sub-conscious Architecture of ${activeResult.dominantColor}`}
+                                      </h5>
+                                      <p>
+                                        {activeResult.dominantColor === PersonalityColor.RED ? (
+                                          lang === "id"
+                                            ? "Sebagai dominan Merah, Anda didorong oleh hasrat terdalam untuk kekuasaan, efisiensi, kontrol, dan pencapaian instan. Frekuensi saraf Anda selalu terkalibrasi untuk memegang kemudi kemandirian. Anda didesain untuk mendepak ketidakpastian dan membangun kemapanan struktural secara mandiri."
+                                            : "As a RED core, your primary neural motivator is Power—expressed through executive efficiency, control, and performance. You possess an innate biological urge to command uncertainty, drive boundaries, and secure results."
+                                        ) : activeResult.dominantColor === PersonalityColor.YELLOW ? (
+                                          lang === "id"
+                                            ? "Sebagai dominan Kuning, Anda didorong oleh petualangan, optimisme sosial, kebebasan, dan pengekspresian diri tanpa batas. Jiwa Anda menolak kungkungan rutinitas kaku, selalu mencari esensi kesenangan duniawi yang dibagikan antarsesama."
+                                            : "As a YELLOW core, you are biological wired toward Fun—expressed through social creativity, spontaneous playfulness, and pure freedom. Your system repels boring repetition, seeking interactive external stimulation."
+                                        ) : activeResult.dominantColor === PersonalityColor.BLUE ? (
+                                          lang === "id"
+                                            ? "Sebagai dominan Biru, Anda dimotivasi oleh Kesetiaan, Kebenaran, Ketulusan Hubungan, dan Presisi Analitis. Jiwa Anda mencari koneksi emosional berkualitas tinggi, menuntut kejujuran maksimal, serta kehati-hatian sebelum melangkah bertindak."
+                                            : "As a BLUE core, your entire system thrives on Connection and Intimacy—meaning loyalty, deep sincerity, conceptual order, and perfect precision. You analyze parameters thoroughly to ensure zero error."
+                                        ) : (
+                                          lang === "id"
+                                            ? "Sebagai dominan Putih, Anda didorong oleh kedamaian batin, harmoni sosial, dan kestabilan bebas konflik. Anda menyukai situasi yang bersahabat, memiliki kesabaran tak bersyarat, serta mampu memediasi perselisihan dengan kepala dingin."
+                                            : "As a WHITE core, your system is anchored completely in Peace—expressed through emotional tolerance, harmony, and absence of dispute. You have massive empathy reserve and quiet independent resilience."
+                                        )}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {reportActiveChapter === 3 && (
+                                    <div className="space-y-3">
+                                      <h5 className="font-extrabold text-slate-800 text-sm border-b border-indigo-50 pb-1 uppercase tracking-wide">
+                                        {lang === "id" ? "BAB III: Polarisasi Karakter (Sisi Terang & Sisi Kegelapan)" : "CHAPTER III: Light & Shadow Attributes"}
+                                      </h5>
+                                      <p>
+                                        {lang === "id"
+                                          ? "Setiap individu menyimpan anugerah karunia (sisi terang) sekaligus bayang-bayang kegelapan (shadow self) yang teraktivasi saat Anda dalam kondisi stres tinggi atau kelelahan emosional."
+                                          : "No personality exists in absolute homeostasis; under extreme pressure, stress constructs, or emotional burnout, your shadow aspects govern response."}
+                                      </p>
+                                      <p className="font-bold text-slate-700">
+                                        {lang === "id" ? "🚨 Kerentanan Sistemik Anda:" : "🚨 Key Weakness Vulnerabilities:"}
+                                      </p>
+                                      <ul className="list-disc pl-4 space-y-1">
+                                        {translations[lang].colorDetails[activeResult.dominantColor].weaknesses.map((wk, idx) => (
+                                          <li key={idx}>{wk}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+
+                                  {reportActiveChapter === 4 && (
+                                    <div className="space-y-3">
+                                      <h5 className="font-extrabold text-slate-800 text-sm border-b border-indigo-50 pb-1 uppercase tracking-wide">
+                                        {lang === "id" ? "BAB IV: Tatalaksana Klinis & Solusi Hambatan Mental" : "CHAPTER IV: Healing Core Personal Cognitive Obstacles"}
+                                      </h5>
+                                      <p>
+                                        {activeResult.dominantColor === PersonalityColor.RED ? (
+                                          lang === "id"
+                                            ? "TIPS SUKSES: Latihlah teknik pernapasan berkala sebelum merespons bawahan yang lambat. Sadarilah bahwa mendelegasikan tugas adalah kunci ekspansi bisnis Anda. Belajarlah mendengar kritik tertulis tanpa melibatkan defensif ego."
+                                            : "SUCCESS TACTIC: Restructure your expectation matrix. Understand delegating isn't weakness; it is scaling power. Pause 4 seconds before reacting to unaligned speeds of team."
+                                        ) : activeResult.dominantColor === PersonalityColor.YELLOW ? (
+                                          lang === "id"
+                                            ? "TIPS SUKSES: Gunakan sistem pemblokiran waktu harian (Time Blocking Pomodoro). Hindari mengambil komitmen ganda. Buat 'Daftar Larangan' (Not-To-Do List) agar kreativitas Anda memiliki pelindung disiplin."
+                                            : "SUCCESS TACTIC: Enforce hard focus structures like the Pomodoro system. Limit concurrent projects to three. Establish strict fiscal checkpoints on dynamic desires."
+                                        ) : activeResult.dominantColor === PersonalityColor.BLUE ? (
+                                          lang === "id"
+                                            ? "TIPS SUKSES: Kurangi overthinking dengan menerapkan prinsip 'Selesai Lebih Baik daripada Sempurna'. Sadari kecemasan Anda adalah bias kognitif proyeksi masa depan. Komunikasikan ganjalan hati secara verbal alih-alih pasif-agresif."
+                                            : "SUCCESS TACTIC: Accept that 'done is healthier than perfect.' Challenge cognitive projections of catastrophe. Verbalize unsaid friction points directly to stay aligned."
+                                        ) : (
+                                          lang === "id"
+                                            ? "TIPS SUKSES: Latihlah berkata 'TIDAK' pada permintaan yang melebihi kapasitas Anda. Mulailah berlatih mengambil inisiatif kepemimpinan dalam diskusi kelompok kecil. Kejar sasaran ambisius secara aktif."
+                                            : "SUCCESS TACTIC: Intentionally select a personal boundary project. Say 'No' flatly to secondary invitations. Take active ownership of group goal formulations."
+                                        )}
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {reportActiveChapter === 5 && (
+                                    <div className="space-y-3">
+                                      <h5 className="font-extrabold text-slate-800 text-sm border-b border-indigo-50 pb-1 uppercase tracking-wide">
+                                        {lang === "id" ? "BAB V: Peta Jalan Transformasi Diri Jangka Panjang" : "CHAPTER V: 12-Month Holistic Self-Mastery Plan"}
+                                      </h5>
+                                      <p>
+                                        {lang === "id"
+                                          ? "Guna menghasilkan reformasi karakter yang andal, Anda wajib mengadopsi ritual pagi khusus. Buat evaluasi mingguan pada aspek emosi, keuangan, spiritual, dan fisik serta sesuaikan dengan aura pendukung Anda."
+                                          : "To achieve permanent mental integration, you must install targeted micro-habits. Complete weekly journals evaluating emotional progress, savings rate, and assertiveness."}
+                                      </p>
+                                      <div className="bg-indigo-50/50 p-3 rounded-xl border border-indigo-100 text-[11px] font-bold text-indigo-800">
+                                        {lang === "id"
+                                          ? `Pesan Konsultan: Kepribadian dominan ${activeResult.dominantColor} Anda adalah anugerah terhebat. Jaga keseimbangan demi hidup seutuhnya.`
+                                          : `Consultant's Note: Your core dominant color is your ultimate unique superpower. Manage your levels to avoid burning out your anchors.`}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {activeTab === "premium-match" && (
+                        <div className="space-y-4">
+                          {!isPremiumUser ? (
+                            renderPremiumTeaser(
+                              translations[lang].premiumFeatures[1],
+                              lang === "id"
+                                ? "Ketikkan nama pasangan atau gebetan untuk langsung memetakan kecocokan cinta, keselarasan emosi, hambatan komunikasi, dan taktik merajut keharmonisan klinis."
+                                : "Check absolute energy alignments, dynamic communication sparks, core friction risks, and healing advice for your relationships.",
+                              <Heart className="w-8 h-8 text-rose-500" />
+                            )
+                          ) : (
+                            <div className="bg-rose-50/20 border border-rose-100 p-5 rounded-2xl">
+                              <div className="border-b border-rose-100 pb-2 mb-4">
+                                <span className="text-[10px] font-black tracking-widest text-rose-600 block uppercase">COUPLE ENERGY INTERLOCK SYSTEM</span>
+                                <h4 className="font-extrabold text-sm text-slate-800">
+                                  {lang === "id" ? "Analisis Kecocokan Jodoh & Pasangan" : "Love Match & Harmony Compatibility Analyzer"}
+                                </h4>
+                              </div>
+
+                              {!matchResult ? (
+                                <div className="space-y-4 max-w-md mx-auto py-4">
+                                  <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-slate-500 block">
+                                      {lang === "id" ? "Nama Pasangan / Gebetan" : "Partner's Name / Crush"}
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={matchPartnerName}
+                                      onChange={(e) => setMatchPartnerName(e.target.value)}
+                                      placeholder="Contoh: Jessica, Ahmad..."
+                                      className="w-full bg-white border border-slate-200 focus:border-rose-500 rounded-xl px-4 py-2.5 text-xs text-slate-800"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-1.5 block">
+                                    <label className="text-[11px] font-bold text-slate-500 block">
+                                      {lang === "id" ? "Aura Warna Pasangan (Estimasi)" : "Partner's Estimated Color Aura"}
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-2 mt-1">
+                                      {[
+                                        { col: PersonalityColor.RED, label: lang === "id" ? "Merah (Dominan)" : "Red (Dominant)" },
+                                        { col: PersonalityColor.YELLOW, label: lang === "id" ? "Kuning (Sosial)" : "Yellow (Social)" },
+                                        { col: PersonalityColor.BLUE, label: lang === "id" ? "Biru (Analis)" : "Blue (Analytical)" },
+                                        { col: PersonalityColor.WHITE, label: lang === "id" ? "Putih (Damai)" : "White (Peaceful)" }
+                                      ].map(item => (
+                                        <button
+                                          key={item.col}
+                                          type="button"
+                                          onClick={() => setMatchPartnerColor(item.col)}
+                                          className={`px-3 py-2.5 text-xs font-bold rounded-xl border transition-all text-left flex items-center gap-2 ${
+                                            matchPartnerColor === item.col
+                                              ? "bg-rose-50 border-rose-500 text-rose-700"
+                                              : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                                          }`}
+                                        >
+                                          <span className={`w-3 h-3 rounded-full ${
+                                            item.col === PersonalityColor.RED ? "bg-rose-500" :
+                                            item.col === PersonalityColor.YELLOW ? "bg-amber-400" :
+                                            item.col === PersonalityColor.BLUE ? "bg-blue-500" :
+                                            "bg-slate-300 border border-slate-400"
+                                          }`}></span>
+                                          <span>{item.label}</span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    onClick={() => {
+                                      if (!matchPartnerName.trim()) {
+                                        showToast(lang === "id" ? "Silakan ketik nama pasangan Anda" : "Please enter your partner name");
+                                        return;
+                                      }
+                                      setMatchLoading(true);
+                                      setTimeout(() => {
+                                        const analysis = calculateCompatibility(activeResult.dominantColor, matchPartnerColor);
+                                        setMatchResult({
+                                          score: analysis.score,
+                                          chemistry: analysis.chemistry,
+                                          communication: analysis.communication,
+                                          bond: analysis.bond,
+                                          conflict: analysis.conflict,
+                                          coachText: analysis.coachText
+                                        });
+                                        setMatchLoading(false);
+                                      }, 800);
+                                    }}
+                                    disabled={matchLoading}
+                                    className="w-full mt-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-extrabold text-xs px-5 py-3 rounded-xl hover:opacity-95 transition-all shadow-md active:scale-95 disabled:opacity-50 flex items-center justify-center gap-1.5 uppercase"
+                                  >
+                                    <Sparkles className="w-4 h-4 text-pink-200 shrink-0" />
+                                    <span>{matchLoading ? (lang === "id" ? "MENGHITUNG DUA ENERGI..." : "SYNCING ENERGIES...") : (lang === "id" ? "Hitung Kecocokan Jodoh" : "Analyze Intimacy Chemistry")}</span>
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="space-y-4 py-1">
+                                  <div className="flex flex-col md:flex-row items-center gap-6 bg-white p-5 rounded-2xl border border-rose-100">
+                                    {/* Score donut visualizer */}
+                                    <div className="relative shrink-0 w-28 h-28 rounded-full bg-gradient-to-br from-rose-200 to-pink-300 p-0.5 flex items-center justify-center shadow-lg shadow-rose-100/50">
+                                      <div className="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-tight">Kelepasan</span>
+                                        <span className="text-2xl font-black text-rose-600">{matchResult.score}%</span>
+                                        <span className="text-[8px] font-extrabold text-slate-500 uppercase">MATCH</span>
+                                      </div>
+                                    </div>
+
+                                    {/* Text summary info */}
+                                    <div className="flex-1 space-y-2 text-center md:text-left">
+                                      <div className="bg-rose-50 text-rose-700 text-[10px] font-extrabold px-3 py-1 rounded-full inline-block uppercase">
+                                        {lang === "id" ? "Klasifikasi Relasi:" : "Union Pattern:"} {matchResult.chemistry}
+                                      </div>
+                                      <h5 className="font-extrabold text-slate-800 text-sm">
+                                        {lang === "id" 
+                                          ? `Analisis Kepribadian untuk ${activeResult.userProfile.name} & ${matchPartnerName}`
+                                          : `Intimacy Mapping for ${activeResult.userProfile.name} & ${matchPartnerName}`}
+                                      </h5>
+                                      <p className="text-xs text-slate-600 leading-relaxed font-semibold">
+                                        {matchResult.coachText}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {/* Metric scores progress bars details */}
+                                  <div className="grid grid-cols-2 gap-3 bg-white p-4 rounded-xl border border-rose-50">
+                                    <div>
+                                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                                        <span>{lang === "id" ? "Komunikasi Teoritik" : "Communication Flow"}</span>
+                                        <span className="text-indigo-600">{matchResult.communication}%</span>
+                                      </div>
+                                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div className="bg-indigo-505 h-full rounded-full" style={{ width: `${matchResult.communication}%` }}></div>
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                                        <span>{lang === "id" ? "Daya Tarik Kimiawi" : "Chemical Chemistry"}</span>
+                                        <span className="text-rose-500">{matchResult.bond}%</span>
+                                      </div>
+                                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div className="bg-rose-500 h-full rounded-full" style={{ width: `${matchResult.bond}%` }}></div>
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                                        <span>{lang === "id" ? "Penyelarasan Finansial" : "Financial Trust"}</span>
+                                        <span className="text-emerald-500">{matchResult.conflict}%</span>
+                                      </div>
+                                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${matchResult.conflict}%` }}></div>
+                                      </div>
+                                    </div>
+
+                                    <div>
+                                      <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                                        <span>{lang === "id" ? "Kestabilan Jangka Panjang" : "Long-Term Stability"}</span>
+                                        <span className="text-amber-500">{matchResult.score + 3 > 100 ? 100 : matchResult.score + 3}%</span>
+                                      </div>
+                                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <div className="bg-amber-500 h-full rounded-full" style={{ width: `${matchResult.score + 3 > 100 ? 100 : matchResult.score + 3}%` }}></div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex justify-center">
+                                    <button
+                                      onClick={() => {
+                                        setMatchPartnerName("");
+                                        setMatchResult(null);
+                                      }}
+                                      className="text-xs font-bold text-rose-600 hover:text-rose-700 mt-2 hover:underline"
+                                    >
+                                      {lang === "id" ? "← Masukkan Nama Baru" : "← Try Another Match"}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {activeTab === "premium-career-finance" && (
+                        <div className="space-y-4">
+                          {!isPremiumUser ? (
+                            renderPremiumTeaser(
+                              translations[lang].premiumFeatures[2],
+                              lang === "id"
+                                ? "Ungkap peta jalan karir pertahun (Tahun 1 s.d Tahun 5) serta visualisasi pembagian alokasi finansial (investasi, konsumsi, emergensi) khusus berdasarkan kelebihan tersembunyi kepribadian Anda."
+                                : "Interactive year-by-year career path timeline coupled with a highly tailored financial spending formula that matches your specific attributes.",
+                              <TrendingUp className="w-8 h-8 rounded text-indigo-600" />
+                            )
+                          ) : (
+                            <div className="bg-indigo-50/20 border border-indigo-100 p-5 rounded-2xl">
+                              <div className="border-b border-indigo-100 pb-2 mb-4">
+                                <span className="text-[10px] font-black tracking-widest text-indigo-600 block uppercase">HOLISTIC WEALTH INTEGRATION SYSTEM</span>
+                                <h4 className="font-extrabold text-sm text-slate-800">
+                                  {lang === "id" ? "Proyeksi Karir 5 Tahun & Arsitektur Finansial" : "5-Year Career Projection & Financial Engine"}
+                                </h4>
+                              </div>
+
+                              {/* Horizon Year Selector buttons */}
+                              <div className="flex items-center justify-between gap-1 mb-4 bg-white/70 rounded-xl p-1.5 border border-indigo-50 overflow-x-auto no-scrollbar">
+                                {[1, 2, 3, 4, 5].map(yr => (
+                                  <button
+                                    key={yr}
+                                    onClick={() => setCareerActiveYear(yr)}
+                                    className={`flex-1 px-2.5 py-1.5 rounded-lg text-xs font-black transition-all text-center whitespace-nowrap min-w-[70px] ${
+                                      careerActiveYear === yr
+                                        ? "bg-slate-900 text-white shadow-sm"
+                                        : "text-slate-500 hover:bg-slate-100"
+                                    }`}
+                                  >
+                                    {lang === "id" ? `Tahun ${yr}` : `Year ${yr}`}
+                                  </button>
+                                ))}
+                              </div>
+
+                              {/* Milestone roadmap card */}
+                              <div className="bg-white p-4 rounded-xl border border-indigo-50 text-xs text-slate-600 font-medium space-y-2 mb-4">
+                                <div className="flex items-center gap-1.5 text-indigo-600 mb-1">
+                                  <Sparkles className="w-4 h-4 shrink-0" />
+                                  <span className="font-black text-[10px] uppercase tracking-wider">
+                                    {lang === "id" ? `Sasaran Utama Peningkatan Karir - Tahun ${careerActiveYear}` : `Major Career Target - Year ${careerActiveYear}`}
+                                  </span>
+                                </div>
+
+                                <p className="font-bold text-slate-800 leading-snug">
+                                  {activeResult.dominantColor === PersonalityColor.RED ? (
+                                    careerActiveYear === 1 ? (lang === "id" ? "Peluncuran Divisi / Inisiatif Baru Mandiri" : "Initialize New Direct Sub-Division Division") :
+                                    careerActiveYear === 2 ? (lang === "id" ? "Ekspansi Tim & Pembentukan Delegasi Tangguh" : "Team Expansion & Formal Delegation Infrastructure") :
+                                    careerActiveYear === 3 ? (lang === "id" ? "Negosiasi Strategis & Kemitraan Skala Besar" : "Strategic Partnerships & High-ticket Acquisitions") :
+                                    careerActiveYear === 4 ? (lang === "id" ? "Kenaikan Posisi C-level atau Peluncuran Bisnis Kedua" : "Board Directorship & Enterprise Portfolio Scaling") :
+                                    (lang === "id" ? "Autonomi Operasional Penuh (Exit Strategy Awal)" : "Complete Operational Autonomy & Early Exit Strategy")
+                                  ) : activeResult.dominantColor === PersonalityColor.YELLOW ? (
+                                    careerActiveYear === 1 ? (lang === "id" ? "Pembangunan Brand Personal & Digital Footprint" : "Personal Branding & Digital Asset Building") :
+                                    careerActiveYear === 2 ? (lang === "id" ? "Diversifikasi Konten & Networking Lintas Sektor" : "Content Diversification & Multi-sector Networking") :
+                                    careerActiveYear === 3 ? (lang === "id" ? "Membentuk Agensi atau Konsultan Kreatif" : "Agency Formulation & Client Retainers Pipeline") :
+                                    careerActiveYear === 4 ? (lang === "id" ? "Ekspansi Skala Pasar melalui Sistem Digital Otomatis" : "Market Amplification through Automated Systems") :
+                                    (lang === "id" ? "Inspirasi Global (Pembicara Tamu / Investor Kreatif)" : "Global Advising, Keynotes & Angel Creative Investing")
+                                  ) : activeResult.dominantColor === PersonalityColor.BLUE ? (
+                                    careerActiveYear === 1 ? (lang === "id" ? "Optimalisasi Sertifikasi Keahlian Tingkat Tinggi" : "Niche Technical Certifications Mastery") :
+                                    careerActiveYear === 2 ? (lang === "id" ? "Rancangan Standar Operasional & Arsitektur Mutu" : "Standard Operating Procedures & Quality Audit Setup") :
+                                    careerActiveYear === 3 ? (lang === "id" ? "Manajemen Solusi Kompleks & Keamanan Sistem" : "Complex Systems Architecture & Senior Leadership") :
+                                    careerActiveYear === 4 ? (lang === "id" ? "Direktorat Kepatuhan, Keuangan, atau Teknologi Utama" : "Directorship of QA, Compliance, or Technical Head") :
+                                    (lang === "id" ? "Konsultan Independen Premium / Dewan Penasihat Ahli" : "Executive Advisor & Premium Private Security/SaaS Consultant")
+                                  ) : (
+                                    careerActiveYear === 1 ? (lang === "id" ? "Stabilisasi Posisi & Mediasi Hubungan Kerja" : "Establishing Stability & Corporate Mediation Hub") :
+                                    careerActiveYear === 2 ? (lang === "id" ? "Inisiatif Mandiri pada Proyek Kolaborasi Lintas Tim" : "Proactive Ownership of Cross-functional Programs") :
+                                    careerActiveYear === 3 ? (lang === "id" ? "Kepala Hubungan Eksekutif / Kepala HRD Organisasi" : "HR Director & Executive Harmony Coordinator") :
+                                    careerActiveYear === 4 ? (lang === "id" ? "Evaluasi & Manajemen Efisiensi Operasional Umum" : "Chief Operations Officer of Harmony Foundations") :
+                                    (lang === "id" ? "Direktur Dewan Mediasi / Pembimbing Spiritual Bisnis" : "Peace Advisory Director & Early Retirement Consolidation")
+                                  )}
+                                </p>
+
+                                <p className="text-xs text-slate-500 leading-relaxed pt-2 border-t border-slate-100">
+                                  {activeResult.dominantColor === PersonalityColor.RED ? (
+                                    lang === "id" 
+                                      ? "Fokus utama adalah menghindari kelelahan tim. Posisikan diri Anda sebagai arsitek visioner daripada mandor yang terus mendikte hal teknis kecil."
+                                      : "Keep your micro-management impulses strictly suppressed. Build strong delegation rails and evaluate team based on output rather than hourly activity."
+                                  ) : activeResult.dominantColor === PersonalityColor.YELLOW ? (
+                                    lang === "id"
+                                      ? "Bahaya konsistensi membayangi Anda. Pasang asisten administratif andal sesegera mungkin di Tahun Ke-2 untuk membereskan detail kontrak."
+                                      : "Your focus risks decay through shiny-object symptoms. Partner with logical managers to lock downstream delivery contracts securely."
+                                  ) : activeResult.dominantColor === PersonalityColor.BLUE ? (
+                                    lang === "id"
+                                      ? "Sifat perfeksionis Anda berisiko memicu overthinking berkepanjangan. Luncurkan program segera, perbaikan fungsional dilakukan seiring jalannya waktu."
+                                      : "Mitigate analysis-paralysis. Launch products when they reach functional standard, fixing minor code blocks iteratively based on live user requests."
+                                  ) : (
+                                    lang === "id"
+                                      ? "Bahaya kemanjaan zona nyaman. Ambil risiko terukur secara tegas. Mintalah porsi keuntungan atau shares atas mediasi sukses Anda."
+                                      : "Do not hide behind agreeable shadows. Actively request pay amplifications or equity positions in programs you stabilize."
+                                  )}
+                                </p>
+                              </div>
+
+                              {/* Portfolio budgeting formulation visual charts */}
+                              <div className="bg-white p-4 rounded-xl border border-indigo-50">
+                                <div className="flex items-center gap-1.5 text-emerald-600 mb-1.5">
+                                  <DollarSign className="w-4 h-4 shrink-0" />
+                                  <span className="font-black text-[10px] uppercase tracking-wider">
+                                    {lang === "id" ? "Rekomendasi Distribusi Finansial Berbasis Kepribadian" : "Personality-Based Financial Budget Architecture"}
+                                  </span>
+                                </div>
+
+                                <div className="space-y-3 pt-1">
+                                  {/* Consolidated horizontal stacked progress bar indicator */}
+                                  <div className="h-6 w-full rounded-xl overflow-hidden flex text-[9px] font-black text-white text-center">
+                                    <div className="bg-emerald-500 flex items-center justify-center transition-all" style={{ width: activeResult.dominantColor === PersonalityColor.RED ? "30%" : activeResult.dominantColor === PersonalityColor.YELLOW ? "15%" : activeResult.dominantColor === PersonalityColor.BLUE ? "35%" : "25%" }}>INV</div>
+                                    <div className="bg-blue-500 flex items-center justify-center transition-all" style={{ width: activeResult.dominantColor === PersonalityColor.RED ? "40%" : activeResult.dominantColor === PersonalityColor.YELLOW ? "50%" : activeResult.dominantColor === PersonalityColor.BLUE ? "35%" : "45%" }}>EXP</div>
+                                    <div className="bg-amber-500 flex items-center justify-center transition-all" style={{ width: activeResult.dominantColor === PersonalityColor.RED ? "15%" : activeResult.dominantColor === PersonalityColor.YELLOW ? "25%" : activeResult.dominantColor === PersonalityColor.BLUE ? "15%" : "15%" }}>DEV</div>
+                                    <div className="bg-rose-500 flex items-center justify-center transition-all" style={{ width: "15%" }}>RES</div>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-bold text-slate-500 mt-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="w-2.5 h-2.5 rounded bg-emerald-500"></span>
+                                      <span>{lang === "id" ? "Investasi" : "Investment"}: {activeResult.dominantColor === PersonalityColor.RED ? "30%" : activeResult.dominantColor === PersonalityColor.YELLOW ? "15%" : activeResult.dominantColor === PersonalityColor.BLUE ? "35%" : "25%"}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="w-2.5 h-2.5 rounded bg-blue-500"></span>
+                                      <span>{lang === "id" ? "Belanja Dasar" : "Essential Exp"}: {activeResult.dominantColor === PersonalityColor.RED ? "40%" : activeResult.dominantColor === PersonalityColor.YELLOW ? "50%" : activeResult.dominantColor === PersonalityColor.BLUE ? "35%" : "45%"}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="w-2.5 h-2.5 rounded bg-amber-500"></span>
+                                      <span>{lang === "id" ? "Pengembangan Diri" : "Self Dev"}: {activeResult.dominantColor === PersonalityColor.RED ? "15%" : activeResult.dominantColor === PersonalityColor.YELLOW ? "25%" : activeResult.dominantColor === PersonalityColor.BLUE ? "15%" : "15%"}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="w-2.5 h-2.5 rounded bg-rose-500"></span>
+                                      <span>{lang === "id" ? "Cadangan Darurat" : "Emergency Reserve"}: 15%</span>
+                                    </div>
+                                  </div>
+
+                                  <p className="text-[11px] text-slate-500 leading-relaxed mt-2 pt-2 border-t border-slate-100 font-semibold italic">
+                                    {activeResult.dominantColor === PersonalityColor.RED ? (
+                                      lang === "id"
+                                        ? "Pendorong Merah didorong untuk memiliki porsi investasi agresif (saham/properti), namun pastikan cadangan darurat 15% terlindungi di kas likuid rendah-risiko demi likuiditas tak terduga."
+                                        : "RED personality prefers aggressive growth portfolios (equities/realestate). Always shield a 15% liquid reserve to bypass immediate credit dependency under dry cycles."
+                                    ) : activeResult.dominantColor === PersonalityColor.YELLOW ? (
+                                      lang === "id"
+                                        ? "Pendorong Kuning peka terhadap belanja impulsif emosional. Terapkan pemindahan saldo otomatis sebesar 15% ke investasi begitu dana cair, dan sisihkan 25% untuk edukasi/networking."
+                                        : "YELLOW core suffers from impulsive lifestyle creep. Formulate strict, automated 15% auto-investments on payout to limit accessible spending buckets."
+                                    ) : activeResult.dominantColor === PersonalityColor.BLUE ? (
+                                      lang === "id"
+                                        ? "Pendorong Biru menyukai keamanan maksimal. Porsi 35% investasi harus didelegasikan pada instrumen indeks berbiaya rendah (S&P500/reksadana obligasi) untuk mencegah stres pemantauan harian."
+                                        : "BLUE core loves absolute risk mitigation. Channel your heavy 35% investment into low-cost global index trackers to eliminate daily manual market anxiety."
+                                    ) : (
+                                      lang === "id"
+                                        ? "Pendorong Putih menyukai ketenangan. Porsi 25% investasi sebaiknya diarahkan pada obligasi pemerintah, deposito syariah, atau emas fisik yang stabil tanpa fluktuasi emosi berlebihan."
+                                        : "WHITE core values absolute peaceful security. Direct your stable 25% investment share toward government-backed income indexes or gold to prevent stressful volatility."
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {activeTab === "premium-cert" && (
+                        <div className="space-y-4">
+                          {!isPremiumUser ? (
+                            renderPremiumTeaser(
+                              translations[lang].premiumFeatures[4],
+                              lang === "id"
+                                ? "Unduh sertifikat resmi kelulusan tes warna karakter Anda lengkap dengan serial nomor registrasi otentik, lencana hologram emas, dan tanda tangan dewan direksi."
+                                : "Print or save your official digital certified Character Evaluation document complete with certification serial ID and gold emblems.",
+                              <Award className="w-8 h-8 text-yellow-500" />
+                            )
+                          ) : (
+                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100/60 max-w-2xl mx-auto text-center font-sans">
+                              {/* Glowing mockup cert frame */}
+                              <div className="bg-indigo-950 p-6 sm:p-8 rounded-3xl border-4 border-amber-400 text-white relative overflow-hidden shadow-2xl space-y-4 shadow-indigo-200/50 print:bg-indigo-950 print:text-white print:p-8 text-center flex flex-col items-center justify-center">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
+                                <div className="absolute left-0 bottom-0 w-32 h-32 bg-amber-400/5 rounded-full blur-3xl"></div>
+
+                                {/* Header Certificate design */}
+                                <div className="space-y-1 mx-auto text-center flex flex-col items-center">
+                                  <div className="flex justify-center mb-2">
+                                    <Award className="w-12 h-12 text-amber-400" />
+                                  </div>
+                                  <h3 className="text-sm sm:text-lg font-black tracking-[0.2em] text-amber-300 uppercase text-center">
+                                    {lang === "id" ? "SERTIFIKAT RESMI KARAKTER AURA" : "OFFICIAL CHARACTER CERTIFICATE"}
+                                  </h3>
+                                  <p className="text-[9px] text-slate-300 font-mono tracking-widest uppercase text-center block">
+                                    REGISTRATION CODE: AUTH-AURA-{(activeResult.id || "res-000").split("-")[1] || "38491"}
+                                  </p>
+                                </div>
+
+                                <div className="italic text-xs text-indigo-200 py-1 text-center font-serif">
+                                  {lang === "id" ? "Dengan ini menyatakan bahwa rekan terdaftar:" : "This official certification verifies that:"}
+                                </div>
+
+                                {/* User's major name bold */}
+                                <h2 className="text-xl sm:text-2xl font-black text-white underline decoration-amber-400 decoration-2 underline-offset-4 tracking-wide text-center">
+                                  {activeResult.userProfile.name}
+                                </h2>
+
+                                <div className="max-w-md mx-auto text-center text-slate-300 text-[11px] leading-relaxed pt-2 font-medium">
+                                  {lang === "id" ? (
+                                    <>
+                                      Telah berhasil menyelesaikan rangkaian evaluasi psikometris Spektrum Warna Kepribadian Hartman dengan formulasi dominasi berwarna <span className={`font-black ${activeResult.dominantColor === PersonalityColor.RED ? "text-rose-400" : activeResult.dominantColor === PersonalityColor.YELLOW ? "text-amber-300" : activeResult.dominantColor === PersonalityColor.BLUE ? "text-blue-300" : "text-white"}`}>{translations[lang].colorDetails[activeResult.dominantColor].name.split("(")[0].trim()}</span> ({activeResult.scores[0].percentage}% Aura). Pemilik sertifikat ini terbukti memiliki motivasi, ketahanan mental, serta potensi kepemimpinan sosial yang sah.
+                                    </>
+                                  ) : (
+                                    <>
+                                      Has successfully analyzed and authenticated their mental traits based on the scientific Hartman Personality evaluation, demonstrating a primary core of <span className={`font-black ${activeResult.dominantColor === PersonalityColor.RED ? "text-rose-400" : activeResult.dominantColor === PersonalityColor.YELLOW ? "text-amber-300" : activeResult.dominantColor === PersonalityColor.BLUE ? "text-blue-300" : "text-white"}`}>{activeResult.dominantColor}</span> ({activeResult.scores[0].percentage}% Intensity).
+                                    </>
+                                  )}
+                                </div>
+
+                                {/* Certification Badges Footers signature */}
+                                <div className="pt-6 grid grid-cols-2 gap-4 border-t border-white/15 text-[9px] font-mono text-slate-400 w-full">
+                                  <div className="text-center space-y-1">
+                                    <p className="text-white font-serif italic text-xs">M. Ali Irkham</p>
+                                    <p className="border-t border-slate-500/50 pt-1 tracking-wider uppercase">Hartman Lab Evaluator</p>
+                                  </div>
+                                  <div className="text-center space-y-1">
+                                    <p className="text-white font-serif italic text-xs">Aura AI Psychologist Engine</p>
+                                    <p className="border-t border-slate-500/50 pt-1 tracking-wider uppercase">AURA RESEARCH INSTITUTE</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <button
+                                onClick={handleTriggerPrint}
+                                className="mt-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-1.5 mx-auto shadow transition-all active:scale-95"
+                              >
+                                <Download className="w-4 h-4 text-amber-400" />
+                                <span>{lang === "id" ? "Simpan / Cetak Sertifikat Resmi" : "Save / Print Official Certificate"}</span>
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -1813,6 +3064,602 @@ export default function App() {
 
                 </div>
 
+              </div>
+                )}
+
+                {/* activeTest === 'iq' Results Panel */}
+                {activeTest === "iq" && iqResult && (
+                  <div className="grid grid-cols-12 gap-6" id="dashboard-results-iq-panel">
+                    {/* Left Column containing scores and certificates */}
+                    <div className="col-span-12 xl:col-span-8 space-y-6">
+                      {/* Major Header IQ Card */}
+                      <section className="bg-white rounded-[32px] p-6 sm:p-8 shadow-md border border-slate-100/40 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+                        <div className="absolute -right-10 -top-10 w-48 h-48 bg-blue-50 rounded-full blur-3xl opacity-60"></div>
+                        <div className="absolute -left-10 -bottom-10 w-56 h-56 bg-indigo-50 rounded-full blur-3xl opacity-60"></div>
+
+                        {/* IQ Donut/Circular Gauge */}
+                        <div className="relative shrink-0 flex items-center justify-center">
+                          <div className="w-52 h-52 sm:w-56 sm:h-56 rounded-full bg-gradient-to-br from-indigo-200 via-indigo-600 to-purple-400 p-1.5 flex items-center justify-center shadow-xl shadow-indigo-100">
+                            <div className="w-full h-full bg-white rounded-full flex flex-col items-center justify-center relative overflow-hidden">
+                              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                ESTIMASI SKOR IQ
+                              </span>
+                              <span className="text-5xl font-black mt-2 text-indigo-700">
+                                {iqResult.score}
+                              </span>
+                              <span className="text-[10px] font-bold tracking-wider text-indigo-500 uppercase mt-2 text-center max-w-[150px]">
+                                {lang === "id" ? iqResult.level : iqResult.levelEn}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* IQ Status Icon badge over absolute position */}
+                          <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 text-[10px] font-black px-3.5 py-1.5 rounded-full shadow-lg border-2 border-white uppercase">
+                            GENIUS SCALE
+                          </div>
+                        </div>
+
+                        {/* Right informational description and share keys */}
+                        <div className="flex-1 relative z-10 space-y-4">
+                          <div>
+                            <span className="px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-600 text-[9px] font-bold uppercase tracking-widest">
+                              STANDAR KOGNITIF AKADEMIK
+                            </span>
+                            <h2 className="text-2xl sm:text-3xl font-black leading-tight text-slate-900 mt-2">
+                              {lang === "id" ? "Estimasi IQ Anda: " : "Estimated Cognitive IQ: "}
+                              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                                {iqResult.score} ({lang === "id" ? "Sangat Unggul" : "Very Superior"})
+                              </span>
+                            </h2>
+                            <p className="text-slate-500 font-medium text-xs sm:text-sm italic mt-1.5">
+                              {lang === "id" 
+                                ? "“Struktur pemikiran analitis tajam, pola asimilasi data cepat, dan kapabilitas problem solving berpresisi tinggi.”"
+                                : "“Highly structured analytical abstract reasoning, rapid data schema digestion, and precise solving speed.”"}
+                            </p>
+                          </div>
+
+                          <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                            {lang === "id" 
+                              ? "Anda menunjukkan kapasitas pemikiran kognitif di atas rata-rata populasi dunia. Anda sangat piawai mengabstraksikan korelasi logis spasial rumit, mendeteksi inkonsistensi pola numerik tak kasat mata, serta merumuskan konklusi verbal taktis secara kilat."
+                              : "You demonstrate excellent fluid cognitive potential far above standard global benchmarks. Highly proficient in structuring abstract logical relationships, synthesizing mathematical sequence layers, and mapping semantic contexts."}
+                          </p>
+
+                          <div className="flex flex-wrap gap-2.5 pt-2">
+                            <button 
+                              onClick={handleShareResultCopy}
+                              className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
+                            >
+                              <Share2 className="w-4 h-4" />
+                              <span>{copyAck ? (lang === "id" ? "Disalin!" : "Copied!") : (lang === "id" ? "Salin Laporan IQ" : "Share IQ Score")}</span>
+                            </button>
+
+                            <button 
+                              onClick={handleTriggerPrint}
+                              className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all"
+                            >
+                              <Download className="w-4 h-4 text-indigo-500" />
+                              <span>{lang === "id" ? "Ekspor Laporan PDF" : "Export PDF Portfolio"}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* Bento grid showing 4 IQ Subscore metrics */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="bg-white p-5 rounded-3xl shadow-sm border border-indigo-50/50">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                              🧠 {lang === "id" ? "Penalaran Logis (Logical)" : "Logical Reasoning"}
+                            </span>
+                            <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              {iqResult.subScores.logical} / 13
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div className="bg-indigo-600 h-full transition-all duration-300" style={{ width: `${(iqResult.subScores.logical / 13) * 100}%` }}></div>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-2 font-semibold">Mengukur pemecahan masalah teoritis abstrak dan induktif.</p>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-3xl shadow-sm border border-indigo-50/50">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                              📐 {lang === "id" ? "Orientasi Spasial (Spatial)" : "Spatial Relations"}
+                            </span>
+                            <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              {iqResult.subScores.spatial} / 12
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div className="bg-indigo-600 h-full transition-all duration-300" style={{ width: `${(iqResult.subScores.spatial / 12) * 100}%` }}></div>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-2 font-semibold font-sans">Mengabstraksi ruang dimensi, visualisasi bentuk, dan rekonstruksi 3D.</p>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-3xl shadow-sm border border-indigo-50/50">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                              📚 {lang === "id" ? "Pemahaman Verbal (Verbal)" : "Verbal Aptitude"}
+                            </span>
+                            <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              {iqResult.subScores.verbal} / 12
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div className="bg-indigo-600 h-full transition-all duration-300" style={{ width: `${(iqResult.subScores.verbal / 12) * 100}%` }}></div>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-2 font-semibold font-sans">Menguji analisis diksi korelasi kata, analogi, dan sinonim-antonim jeli.</p>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-3xl shadow-sm border border-indigo-50/50">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                              🔢 {lang === "id" ? "Kuantitatif/Numerik (Numerical)" : "Numerical Sequence"}
+                            </span>
+                            <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                              {iqResult.subScores.numerical} / 13
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div className="bg-indigo-600 h-full transition-all duration-300" style={{ width: `${(iqResult.subScores.numerical / 13) * 100}%` }}></div>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-2 font-semibold">Menguji logika deret matematika berkelanjutan serta asimilasi kalkulasi numerik cepat.</p>
+                        </div>
+                      </div>
+
+                      {/* Detail Intelligence Tabs switcher inside results layout */}
+                      <div className="bg-white rounded-3xl p-6 shadow-sm border border-indigo-50">
+                        <div className="flex border-b border-slate-100 overflow-x-auto pb-1 mb-4 gap-1 no-scrollbar">
+                          <button
+                            onClick={() => setActiveTab("strengths")}
+                            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap ${
+                              activeTab === "strengths" ? "bg-indigo-50 text-indigo-600" : "text-slate-500 hover:bg-slate-50"
+                            }`}
+                          >
+                            {lang === "id" ? "Kekuatan Kognitif" : "Cognitive Strengths"}
+                          </button>
+                          
+                          <button
+                            onClick={() => setActiveTab("weakness")}
+                            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap ${
+                              activeTab === "weakness" ? "bg-indigo-50 text-indigo-600" : "text-slate-500 hover:bg-slate-50"
+                            }`}
+                          >
+                            {lang === "id" ? "Sektor Butuh Asah" : "Growth Segments"}
+                          </button>
+
+                          <button
+                            onClick={() => setActiveTab("premium-career-finance")}
+                            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap flex items-center gap-1 ${
+                              activeTab === "premium-career-finance" ? "bg-purple-100 text-purple-700 font-extrabold" : "text-slate-500 hover:bg-purple-50"
+                            }`}
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                            <span>{lang === "id" ? "Karir & Finansial IQ" : "IQ Career Strategy"}</span>
+                          </button>
+
+                          <button
+                            onClick={() => setActiveTab("premium-cert")}
+                            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap flex items-center gap-1 ${
+                              activeTab === "premium-cert" ? "bg-amber-50 text-amber-700 font-extrabold border border-amber-100" : "text-slate-500 hover:bg-amber-50"
+                            }`}
+                          >
+                            <Award className="w-3.5 h-3.5 text-amber-500" />
+                            <span>{lang === "id" ? "Sertifikat IQ Resmi" : "Official IQ Credentials"}</span>
+                          </button>
+                        </div>
+
+                        {/* Rendering core tab view with Premium Protection */}
+                        <div className="mt-4">
+                          {activeTab === "strengths" && (
+                            <div className="space-y-4">
+                              <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">{lang === "id" ? "ANALISIS PRESTASI KOGNITIF" : "COGNITIVE MASTERIES ANALYSIS"}</h4>
+                              <p className="text-xs text-slate-600 leading-relaxed font-semibold">
+                                {lang === "id"
+                                  ? "Anda memiliki kapasitas asimilasi pola logis di atas 92% populasi dunia. Anda sangat piawai mengidentifikasi problem solver teoretis rumit, mendesain hipotesis korelasi, serta menyembuhkan inefisiensi sistemik dengan kepekaan visual spasial yang luar biasa tajam."
+                                  : "You possess structured cognitive patterns matching top global brackets. Your strengths include highly robust system structuring, spotting microscopic formula errors, and mapping complex dimensional objects with absolute ease."}
+                              </p>
+                              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-start gap-3">
+                                <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="text-xs font-bold text-emerald-800">{lang === "id" ? "Akurasi Logis Ekstrim" : "Extreme Logical Accuracy"}</p>
+                                  <p className="text-[11px] text-emerald-700 mt-1 font-semibold">{lang === "id" ? "Keunggulan menguraikan data bercabang besar menjadi simpulan logis solid." : "Superb capabilities in converting massive branched elements into precise analytical summaries."}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {activeTab === "weakness" && (
+                            <div className="space-y-4">
+                              <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">{lang === "id" ? "STRATEGI MENGASAH SEKTOR KOGNITIF" : "COGNITIVE REFINEMENT ROADMAP"}</h4>
+                              <p className="text-xs text-slate-600 leading-relaxed font-semibold">
+                                {lang === "id"
+                                  ? "Meskipun kecerdasan fluid Anda luar biasa tajam, Anda kadang-kadang terjebak dalam kecenderungan 'over-thinking' atau menganalisis terlalu berlebih (analysis paralysis). Sektor kognitif verbal Anda juga membutuhkan pengayaan perbendaharaan diksi akademik sesekali agar komunikasi logis Anda tersampaikan secara sederhana namun berdampak magnetik."
+                                  : "Despite stellar abstract scores, you occasional run into high cognitive friction like analysis paralysis. Refining direct pragmatic communication lines helps convert your complex mental plans into immediate team actions without cognitive noise."}
+                              </p>
+                            </div>
+                          )}
+
+                          {activeTab === "premium-career-finance" && (
+                            isPremiumUser ? (
+                              <div className="space-y-4">
+                                <h4 className="text-sm font-bold text-indigo-950 uppercase tracking-wider flex items-center gap-1.5 font-sans">
+                                  <Briefcase className="w-4 h-4 text-indigo-600" />
+                                  <span>{lang === "id" ? "PROYEKSI EMAS KARIR & SOLUSI FINANSIAL IQ" : "HIGH-COGNITION CAREER BLUEPRINT & FINANCIALS"}</span>
+                                </h4>
+                                <p className="text-xs text-slate-600 leading-relaxed font-semibold">
+                                  {lang === "id"
+                                    ? "IQ tinggi di rentang 120-138 sangat pas mengepalai industri sistemik rumit tingkat lanjut. Berikut adalah beberapa sektor karir berbayar tertinggi yang menyelaraskan bakat kognitif luar biasa Anda:"
+                                    : "High IQ scores between 120-138 are naturally primed to command systems architecture and deep strategic modeling. Standard high-paying corporate matching includes:"}
+                                </p>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                  <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-start gap-3">
+                                    <TrendingUp className="w-5 h-5 text-indigo-600 shrink-0 mt-1" />
+                                    <div>
+                                      <p className="text-xs font-bold text-slate-800">{lang === "id" ? "Insinyur Kecerdasan Buatan (AI Specialist)" : "Artificial Intelligence Specialist"}</p>
+                                      <p className="text-[10px] text-slate-500 font-semibold mt-1 font-sans">{lang === "id" ? "Fokus memetakan bobot pola algoritma jaringan syaraf tiruan matematis." : "Focuses on deep mathematical models and dense semantic neural network nodes."}</p>
+                                      <span className="text-[10px] font-black text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded mt-2 inline-block">Est: Rp 35jt - Rp 90jt/bln</span>
+                                    </div>
+                                  </div>
+
+                                  <div className="p-4 bg-purple-50/50 rounded-2xl border border-purple-100 flex items-start gap-3">
+                                    <DollarSign className="w-5 h-5 text-purple-600 shrink-0 mt-1" />
+                                    <div>
+                                      <p className="text-xs font-bold text-slate-800">{lang === "id" ? "Analis Finansial Kuantitatif (Quant Analyst)" : "Quantitative Analyst"}</p>
+                                      <p className="text-[10px] text-slate-500 font-semibold mt-1">{lang === "id" ? "Trading algoritma kuantitatif berbasis tren rasi ekonomi logis spasial." : "Formulating programmatic trade calculations based on mathematical probability arrays."}</p>
+                                      <span className="text-[10px] font-black text-purple-600 bg-purple-100 px-2 py-0.5 rounded mt-2 inline-block">Est: Rp 45jt - Rp 120jt/bln</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              renderPremiumTeaser(
+                                lang === "id" ? "Buka Proyeksi Karir Finansial Karakter Premium" : "Unlock High-Cognition Career & Salary Blueprint",
+                                lang === "id" 
+                                  ? "Peta proyeksi karir berpenghasilan tertinggi nasional & internasional khusus orang ber-IQ unggul lengkap dengan kalkulator finansial masa depan Anda."
+                                  : "Identify customized, ultra-high-paying roles globally aligned with your high intellectual index. Complete with future financial estimators.",
+                                <Briefcase className="w-8 h-8 text-purple-600" />
+                              )
+                            )
+                          )}
+
+                          {activeTab === "premium-cert" && (
+                            isPremiumUser ? (
+                              <div className="space-y-4">
+                                <h4 className="text-sm font-bold text-amber-950 uppercase tracking-widest flex items-center gap-1">
+                                  <Award className="w-4 h-4 text-amber-600 animate-pulse" />
+                                  <span>{lang === "id" ? "SERTIFIKAT KOGNITIF DIGITAL RESMI" : "OFFITAL DIGITAL COGNITIVE CREDENTIAL"}</span>
+                                </h4>
+                                <p className="text-xs text-slate-500">
+                                  {lang === "id"
+                                    ? "Berikut sertifikat resmi digital terdaftar Anda. Anda dapat menyematkan sertifikat tervalidasi ini pada profil LinkedIn, CV, Portofolio lamaran kerja Anda."
+                                    : "Below is your validated official intelligence certification. You can share this credential link in LinkedIn, Resume portfolios, and corporate job applications."}
+                                </p>
+
+                                {/* Golden elegant IQ Certificate frame centered beautifully */}
+                                <div className="p-8 bg-amber-50/50 border-4 border-amber-200 rounded-[32px] text-center relative overflow-hidden shadow-inner max-w-xl mx-auto font-serif">
+                                  <div className="absolute top-0 right-0 w-32 h-32 bg-amber-100 rounded-full blur-2xl opacity-40"></div>
+                                  <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-indigo-100 rounded-full blur-2xl opacity-30"></div>
+
+                                  <span className="text-[10px] font-sans font-black uppercase text-amber-600 tracking-widest block mb-1">
+                                    CERTIFICATE OF COGNITIVE ACHIEVEMENT
+                                  </span>
+                                  <div className="w-12 h-1 bg-amber-400 mx-auto mb-6"></div>
+
+                                  <p className="text-slate-500 text-[11px] italic mb-3">Sertifikat ini secara resmi diberikan kepada:</p>
+                                  <h5 className="font-extrabold text-slate-800 text-xl tracking-tight mb-2 uppercase">{profile.name || "Klien Premium"}</h5>
+                                  <p className="text-slate-400 text-[10px] italic max-w-md mx-auto line-clamp-2">
+                                    {lang === "id"
+                                      ? "Telah sukses menjalani rangkaian Asesmen IQ Struktur Profesional 50 Soal Akademis Internasional dan divalidasi memiliki kecerdasan fluid di atas rata-rata global."
+                                      : "Has successfully completed the Professional Structured Academic Intelligence Assessment of 50 comprehensive segments and validated with superior fluid scores."}
+                                  </p>
+
+                                  <div className="my-8 py-4 bg-white/75 rounded-2xl border border-amber-100 flex justify-around items-center font-sans">
+                                    <div>
+                                      <p className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">ESTIMATION SCORE</p>
+                                      <p className="text-2xl font-black text-amber-600">{iqResult.score} IQ</p>
+                                    </div>
+                                    <div className="w-px h-10 bg-amber-100"></div>
+                                    <div>
+                                      <p className="text-[9px] font-bold text-slate-400 tracking-widest uppercase">CLASSIFICATION</p>
+                                      <p className="text-[11px] text-slate-800 uppercase font-semibold">{lang === "id" ? "Sangat Unggul" : "Very Superior"}</p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex justify-between items-center px-4">
+                                    <div className="text-left font-sans">
+                                      <p className="text-[8px] font-semibold text-slate-400">CREDENTIAL ID</p>
+                                      <p className="text-[9px] font-black text-indigo-600">IQ-ID-8849-DF9</p>
+                                    </div>
+                                    <div className="text-center font-sans">
+                                      <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 mx-auto rounded-full flex items-center justify-center text-indigo-600 font-bold text-[8px] shadow-sm tracking-tighter">
+                                        STAMP
+                                      </div>
+                                    </div>
+                                    <div className="text-right font-sans">
+                                      <p className="text-[8px] font-semibold text-slate-400">DATE ISSUED</p>
+                                      <p className="text-[9px] font-bold text-slate-800">{new Date(iqResult.date).toLocaleDateString()}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              renderPremiumTeaser(
+                                lang === "id" ? "Buka Sertifikat Karakter Digital Resmi" : "Unlock Official Digital IQ Certificate",
+                                lang === "id" 
+                                  ? "Unduh sertifikat berkredensial formal khusus dengan verifikasi ID serial unik, stempel tanda tangan formal guna meningkatkan daya pikat CV profesional Anda."
+                                  : "Receive your gorgeous formal certification with verified ID code and digital signature. Ready to print, share and embed in LinkedIn or CV.",
+                                <Award className="w-8 h-8 text-amber-500" />
+                              )
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right column containing secondary action widgets */}
+                    <div className="col-span-12 xl:col-span-4 space-y-6">
+                      {/* Premium AI Consult for IQ test */}
+                      <div className="bg-gradient-to-tr from-indigo-900 to-indigo-950 text-white rounded-[32px] p-6 shadow-xl border border-indigo-950/80 relative overflow-hidden text-left">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-800 rounded-full blur-2xl opacity-40 animate-pulse"></div>
+                        <h4 className="font-extrabold text-base mb-1.5 flex items-center gap-1.5">
+                          <Sparkles className="w-4 h-4 text-yellow-300 shrink-0 animate-spin" />
+                          <span>AI Coach IQ Advisor</span>
+                        </h4>
+                        <p className="text-xs text-indigo-200/90 leading-relaxed">
+                          {lang === "id" 
+                            ? "Konsultasikan langsung hasil IQ Anda bersama Chatbot Psikolog AI Tanpa Batas kami. Dapatkan rekomendasi peningkatan fluid kearifan adaptif!"
+                            : "Consult your cognitive results with our live AI Therapist widget. Obtain custom logic learning strategies tailored exclusively to you."}
+                        </p>
+
+                        <div className="mt-4 p-4 rounded-2xl bg-indigo-950 border border-indigo-800/65">
+                          <span className="text-[9px] font-black text-indigo-400 block tracking-wider uppercase">AI CONSULT INTERACTIVE</span>
+                          <p className="text-xs font-semibold text-slate-350 mt-2 leading-relaxed italic">
+                            {lang === "id" 
+                              ? "“Halo! Skor IQ Anda " + iqResult.score + " berada di peringkat teratas 2% populasi dunia. Sektor kognitif analitis Anda sangat luar biasa! Bagian mana dari tantangan verbal & logika spasial tadi yang paling menantang bagi Anda?”"
+                              : "“Hello! Your intelligence index " + iqResult.score + " is remarkably high! Your abstract logic pathways are perfectly optimized. Ask me anything on career development paths...”"}
+                          </p>
+                        </div>
+
+                        {!isPremiumUser && (
+                          <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm flex flex-col justify-center items-center p-4 text-center">
+                            <Lock className="w-8 h-8 text-yellow-300 animate-bounce mb-2" />
+                            <p className="text-xs text-white font-bold">{lang === "id" ? "Chat Psikolog AI Terkunci" : "AI Psychologist Assistant Locked"}</p>
+                            <p className="text-[10px] text-slate-300 max-w-xs mt-1 leading-normal font-medium">{lang === "id" ? "Buka premium untuk mendapatkan konsultasi chat interaktif tanpa batas." : "Purchase premium unlocks unlimited chat advisor capabilities."}</p>
+                            <button
+                              onClick={() => setShowPremiumModal(true)}
+                              className="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] px-4 py-2 rounded-xl transition-all"
+                            >
+                              UPGRADE TO PREMIUM
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Small History timeline lists */}
+                      <div className="bg-white rounded-[32px] p-6 shadow-sm border border-indigo-50 text-left">
+                        <h5 className="font-black text-slate-800 uppercase text-xs tracking-widest mb-4">
+                          IQ TEST STATS BLUEPRINT
+                        </h5>
+                        <div className="space-y-3.5">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-slate-500 font-medium">{lang === "id" ? "Tanggal Tes:" : "Date Evaluated:"}</span>
+                            <span className="text-slate-800 font-black">{new Date(iqResult.date).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-slate-500 font-medium">{lang === "id" ? "Jumlah Jawaban:" : "Questions Answered:"}</span>
+                            <span className="text-slate-800 font-black">50 / 50</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-slate-500 font-medium">{lang === "id" ? "Akurasi Jawaban:" : "Scoring Precision:"}</span>
+                            <span className="text-emerald-600 font-black">
+                              {Math.round(((iqResult.subScores.logical + iqResult.subScores.verbal + iqResult.subScores.spatial + iqResult.subScores.numerical) / 50) * 100)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* activeTest === 'psychopath' Results Panel */}
+                {activeTest === "psychopath" && psyResult && (
+                  <div className="grid grid-cols-12 gap-6" id="dashboard-results-psy-panel">
+                    {/* Dark/Charcoal style layout container fitting psychopath theme beautifully */}
+                    <div className="col-span-12 xl:col-span-8 space-y-6">
+                      
+                      {/* Highly responsive Entertainment Purpose Disclaimer */}
+                      <div className="bg-amber-50 border border-amber-250 p-4 rounded-3xl text-amber-900 text-xs leading-relaxed flex items-start gap-3 relative z-10 text-left">
+                        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-black text-amber-950 uppercase tracking-widest text-[11px] mb-1">
+                            {lang === "id" ? "⚠️ PERNYATAAN HIBURAN PENTING (DISCLAIMER)" : "⚠️ CASUAL ENTERTAINMENT DISCLAIMER"}
+                          </p>
+                          <p className="text-[10px] sm:text-xs text-amber-900 font-semibold leading-relaxed">
+                            {lang === "id"
+                              ? "Tes ini didesain dan disusun semata-mata untuk sarana hiburan rekreasi ringan, keseruan bermain peran cerita populer, dan interaksi sosial. Angka persentase dan label karakter di bawah tidak bersifat klinis diagnosis kesehatan, kejiwaan atau penentuan kondisi mental psikiatrik sesungguhnya Anda. Jika Anda mengalami kendala psikis atau kesehatan mental klinis nyata, mohon hubungi langsung psikolog atau ahli medis profesional berlisensi demi penanganan yang absah."
+                              : "This interactive play index is created purely for pop-psych entertainment, fun self-reflection, and social scenarios. Scores and cinematic titles shown below carry no psychiatric diagnosis weights and are not scientific mental health evaluations. If you seek official psychological help, please consult with a licensed professional practitioner."}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Header result card with intense crimson accent overlays */}
+                      <section className="bg-slate-900 text-white rounded-[32px] p-6 sm:p-8 shadow-xl border border-rose-950/70 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+                        <div className="absolute -right-10 -top-10 w-48 h-48 bg-rose-900/30 rounded-full blur-3xl opacity-60 animate-pulse"></div>
+                        <div className="absolute -left-10 -bottom-10 w-56 h-56 bg-indigo-900/30 rounded-full blur-3xl opacity-60"></div>
+
+                        {/* Psychopath Donut/Circle Graph Gauge */}
+                        <div className="relative shrink-0 flex items-center justify-center">
+                          <div className="w-52 h-52 sm:w-56 sm:h-56 rounded-full bg-gradient-to-br from-rose-600 via-rose-950 to-slate-900 p-1 flex items-center justify-center shadow-lg shadow-rose-900/20">
+                            <div className="w-full h-full bg-slate-950 rounded-full flex flex-col items-center justify-center relative overflow-hidden">
+                              <span className="text-[9px] font-bold text-rose-500 uppercase tracking-widest">
+                                PSYCHOPATHY LEVEL
+                              </span>
+                              <span className="text-5xl font-black mt-2 text-rose-500">
+                                {psyResult.totalPoints}%
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase mt-2 text-center max-w-[150px] leading-relaxed">
+                                {lang === "id" ? psyResult.level : psyResult.levelEn}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="absolute -bottom-2 -right-2 bg-rose-600 text-white text-[10px] font-black px-3.5 py-1.5 rounded-full shadow-lg border-2 border-slate-950 uppercase tracking-widest">
+                            {lang === "id" ? "TIPE FUN" : "PLAYOUT TYPE"}
+                          </div>
+                        </div>
+
+                        {/* Right texts and descriptive outcomes */}
+                        <div className="flex-1 relative z-10 space-y-4 text-left">
+                          <div>
+                            <span className="px-2.5 py-1 rounded bg-rose-900/40 text-rose-400 text-[10px] font-black tracking-widest uppercase">
+                              PERSPEKTIF ARTIFAK LOGIKA
+                            </span>
+                            <h2 className="text-2xl sm:text-3xl font-black leading-tight mt-2.5">
+                              {lang === "id" ? "Karakter Anda: " : "Scenario Persona: "}
+                              <span className="text-rose-500">
+                                "{lang === "id" ? psyResult.title : psyResult.titleEn}"
+                              </span>
+                            </h2>
+                            <p className="text-slate-400 font-medium text-xs sm:text-sm italic mt-1.5">
+                              "{lang === "id" ? psyResult.desc : psyResult.descEn}"
+                            </p>
+                          </div>
+
+                          <p className="text-slate-300 text-xs leading-relaxed">
+                            {lang === "id"
+                              ? "Melalui skenario game yang dilewati, Anda mencatatkan kecenderungan rasionalitas tinggi dengan pengendalian emosional yang mantap. Anda menyelesaikan masalah dengan logika objektif (kadangkala dingin) tetapi masih memiliki kompromi moral pada norma-norma kehidupan sehari-hari."
+                              : "Through the scenario logs, you display robust analytical boundaries with outstanding strategic logic patterns. You solve hurdles using cold objectivity but maintain standard societal moral checks properly."}
+                          </p>
+
+                          <div className="flex flex-wrap gap-2.5 pt-2">
+                            <button 
+                              onClick={handleShareResultCopy}
+                              className="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all hover:scale-[1.02] active:scale-95"
+                            >
+                              <Share2 className="w-4 h-4" />
+                              <span>{copyAck ? (lang === "id" ? "Disalin!" : "Copied!") : (lang === "id" ? "Bagikan Hasil" : "Share Score")}</span>
+                            </button>
+
+                            <button 
+                              onClick={handleTriggerPrint}
+                              className="border border-rose-800 bg-slate-950 hover:bg-slate-900 text-slate-300 px-5 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all"
+                            >
+                              <Download className="w-4 h-4 text-rose-500" />
+                              <span>{lang === "id" ? "Unduh CV Mental" : "Download PDF Certificate"}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* Interactive Section showing strategic social tips with Premium Locker */}
+                      <div className="bg-white rounded-3xl p-6 shadow-sm border border-indigo-50 text-left">
+                        <div className="flex border-b border-slate-150 gap-2 overflow-x-auto pb-1.5 no-scrollbar mb-4">
+                          <button
+                            onClick={() => setActiveTab("strengths")}
+                            className={`px-4 py-2 text-xs font-black rounded-xl transition-all whitespace-nowrap ${
+                              activeTab === "strengths" ? "bg-rose-50 text-rose-600" : "text-slate-500 hover:bg-slate-50"
+                            }`}
+                          >
+                            {lang === "id" ? "Bedah Logika Karakter" : "Character Logic Analysis"}
+                          </button>
+                          
+                          <button
+                            onClick={() => setActiveTab("premium-career-finance")}
+                            className={`px-4 py-2 text-xs font-black rounded-xl transition-all whitespace-nowrap flex items-center gap-1 ${
+                              activeTab === "premium-career-finance" ? "bg-purple-100 text-purple-700 font-extrabold" : "text-slate-500 hover:bg-purple-50"
+                            }`}
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                            <span>{lang === "id" ? "Tips Relasi & Karir Taktis (Premium)" : "Tactical Social Tips (Premium)"}</span>
+                          </button>
+                        </div>
+
+                        {/* Tab panel rendering */}
+                        <div className="mt-4">
+                          {activeTab === "strengths" && (
+                            <div className="space-y-4">
+                              <h5 className="text-xs font-bold text-slate-800 uppercase tracking-widest">{lang === "id" ? "DESTRUKSIBILITAS LOGIKA STRATEGIS" : "STRATEGIC RATIONAL LOGIC"}</h5>
+                              <p className="text-xs text-slate-600 leading-relaxed font-semibold">
+                                {lang === "id"
+                                  ? "Anda merespons kasus dengan kacamata pragmatis murni. Anda tidak mudah disetir oleh luapan emosional sesaat dari luar, membuat Anda menjadi eksekutor tangguh dalam skenario krusial atau tenggat waktu menekan dalam bisnis."
+                                  : "You handle cases using pragmatic filters. Prone to stay calm under emotional turbulence or hectic company targets, making you an exceptional risk coordinator."}
+                              </p>
+                            </div>
+                          )}
+
+                          {activeTab === "premium-career-finance" && (
+                            isPremiumUser ? (
+                              <div className="space-y-4">
+                                <h5 className="text-xs font-extrabold text-slate-800 uppercase tracking-widest">{lang === "id" ? "TIPS PERTEMUAN SOSIAL & KARIR TINGGI" : "TACTICAL RELATION BLUEPRINT"}</h5>
+                                <p className="text-xs text-slate-600 font-semibold leading-relaxed">
+                                  {lang === "id"
+                                    ? "Dengan kadar rasionalitas tinggi, Anda sangat cocok diletakkan pada posisi penetral krisis atau manajemen negosiasi bisnis makro. Pelajari cara menyuntikkan sedikit empati imitasi demi kelicinan relasi sosial bisnis Anda:"
+                                    : "With high rational control, you thrive in high-stakes negotiation or crisis mitigation. Implement active listening and empathetic loops to smoothen corporate deals easily:"}
+                                </p>
+                                <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl">
+                                  <p className="text-xs font-bold text-rose-800">{lang === "id" ? "Karisma Berbicara" : "Charming Speeches"}</p>
+                                  <p className="text-[11px] text-rose-600 font-semibold mt-1">{lang === "id" ? "Hati-hati dengan nada datar; gunakan intonasi naik-turun berkala guna mendelegasikan perintah dengan mulus tanpa menakuti tim kerja Anda." : "Exercise pitch moderation; avoid flat expressions during team delegation so members follow comfortably."}</p>
+                                </div>
+                              </div>
+                            ) : (
+                              renderPremiumTeaser(
+                                lang === "id" ? "Buka Tips Relasi & Karir Taktis Premium" : "Unlock Tactical Social Tips Premium",
+                                lang === "id"
+                                  ? "Dapatkan tips negosiasi, strategi karir pembuat keputusan tingkat eksekutif, serta token kelulusan simulasi keberanian mental fiktif secara lengkap."
+                                  : "Obtain customized executive communication strategies, game theories, and fun mental courage certificate outputs.",
+                                <Activity className="w-8 h-8 text-rose-600 animate-pulse" />
+                              )
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right column with AI coach chatbot helper */}
+                    <div className="col-span-12 xl:col-span-4 space-y-6">
+                      {/* Dark/Intense Coach panel */}
+                      <div className="bg-slate-950 text-white rounded-[32px] p-6 shadow-xl border border-rose-950 flex flex-col justify-between relative overflow-hidden text-left">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-950/40 rounded-full blur-2xl"></div>
+                        <div>
+                          <h4 className="font-extrabold text-slate-100 text-sm mb-1.5 flex items-center gap-1.5 uppercase tracking-wide">
+                            <Activity className="w-4 h-4 text-rose-500 animate-pulse" />
+                            <span>AI Psycho-Logic Analyzer</span>
+                          </h4>
+                          <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                            {lang === "id"
+                              ? "Konsultasikan hasil profil fiktif Anda bersama AI Psikolog khusus kami untuk membedah strategi kepemimpinan karismatik."
+                              : "Review your casual scenario profile with our deep AI Psychologist tool to master charismatic negotiation patterns."}
+                          </p>
+
+                          <div className="mt-4 p-4 rounded-2xl bg-slate-900 border border-rose-950/80">
+                            <span className="text-[9px] font-black text-rose-500 block tracking-wider uppercase">CONVERSATION LOG</span>
+                            <p className="text-xs text-slate-300 font-semibold mt-2 italic leading-relaxed">
+                              {lang === "id"
+                                ? "“Analisis skenario Anda unik! Rasionalitas " + psyResult.totalPoints + "% menunjukkan Anda pengambil keputusan tangguh. Ingin tahu cara meyakinkan investor tanpa terbaca kecemasan?”"
+                                : "“Excellent play indices! Your score of " + psyResult.totalPoints + "% denotes extreme resilience. Ask me how to pitch deals with zero anxiety clues...”"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {!isPremiumUser && (
+                          <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col justify-center items-center p-4 text-center">
+                            <Lock className="w-8 h-8 text-rose-500 animate-bounce mb-2" />
+                            <p className="text-xs text-white font-bold">{lang === "id" ? "Akses Chat Terkunci" : "AI Psychologist Log Locked"}</p>
+                            <p className="text-[10px] text-slate-400 max-w-xs mt-1 leading-normal font-medium">{lang === "id" ? "Buka premium untuk mendapatkan konsultasi chat taktis tanpa batas." : "Purchase premium unlocks unlimited interaction logs."}</p>
+                            <button
+                              onClick={() => setShowPremiumModal(true)}
+                              className="mt-3 bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] px-4 py-2 rounded-xl transition-all uppercase"
+                            >
+                              LOCK PREMIUM
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
