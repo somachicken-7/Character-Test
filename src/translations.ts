@@ -42,7 +42,7 @@ export const translations = {
       "Chat Interaktif Tanpa Batas dengan Psikolog AI",
       "Sertifikat Karakter Digital Resmi"
     ],
-    pricing: "Hanya Rp 49.000 (Harga Normal Rp 199.000)",
+    pricing: "Hanya Rp 25.000 (Harga Normal Rp 199.000)",
     payMethod: "Pilih Metode Pembayaran",
     payBank: "Transfer Bank Manual",
     paySaweria: "Saweria (QRIS / E-wallet)",
@@ -159,7 +159,7 @@ export const translations = {
       "Unlimited Interactive Chat with AI Psychologist",
       "Official Digital Character Certificate"
     ],
-    pricing: "Only $3.49 (Normal Price $14.99)",
+    pricing: "Only $5 (Normal Price $14.99)",
     payMethod: "Select Payment Method",
     payBank: "Manual Bank Transfer",
     paySaweria: "Saweria (QRIS / E-wallet)",

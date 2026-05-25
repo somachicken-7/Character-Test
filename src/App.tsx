@@ -44,6 +44,14 @@ export default function App() {
   // Locale State
   const [lang, setLang] = useState<"id" | "en">("id");
 
+  // Currency Formatter Helper
+  const formatAmount = (amt: number) => {
+    if (amt <= 1000) {
+      return `$${amt}`;
+    }
+    return `Rp ${amt.toLocaleString("id-ID")}`;
+  };
+
   // User Role State
   const [currentUserRole, setCurrentUserRole] = useState<"user" | "admin">(() => {
     return (localStorage.getItem("aura_active_role") as "user" | "admin") || "user";
@@ -176,7 +184,7 @@ export default function App() {
           userName: "Ariel Pratama",
           userEmail: "ariel.pratama@gmail.com",
           date: "2026-05-24T18:22:15Z",
-          amount: 49000,
+          amount: 25000,
           paymentMethod: "Saweria",
           status: "Pending",
           whatsappNumber: "08123456789",
@@ -189,7 +197,7 @@ export default function App() {
           userName: "Dewi Anggraini",
           userEmail: "dewi.angg@yahoo.com",
           date: "2026-05-23T09:15:00Z",
-          amount: 49000,
+          amount: 25000,
           paymentMethod: "Bank Transfer",
           status: "Success",
           whatsappNumber: "082211443355",
@@ -264,20 +272,27 @@ export default function App() {
 
   // Handle quiz options clicked
   const handleAnswerSelect = (color: PersonalityColor) => {
-    setAnswers(prev => ({ ...prev, [currentQuestionIdx]: color }));
+    const newAnswers = { ...answers, [currentQuestionIdx]: color };
+    setAnswers(newAnswers);
     
     // Automatically proceed to next or finish
     if (currentQuestionIdx < questionsList.length - 1) {
       setTimeout(() => {
         setCurrentQuestionIdx(prev => prev + 1);
       }, 350);
+    } else {
+      // Automatically generate profile after 30th question
+      setTimeout(() => {
+        computeAnalysis(newAnswers);
+      }, 450);
     }
   };
 
   // Evaluate results scores
-  const computeAnalysis = () => {
+  const computeAnalysis = (updatedAnswers?: Record<number, PersonalityColor>) => {
+    const activeAnswers = updatedAnswers || answers;
     const totalQuestions = questionsList.length;
-    const answeredCount = Object.keys(answers).length;
+    const answeredCount = Object.keys(activeAnswers).length;
     
     if (answeredCount < totalQuestions) {
       showToast(lang === "id" 
@@ -294,7 +309,7 @@ export default function App() {
       [PersonalityColor.WHITE]: 0,
     };
 
-    Object.values(answers).forEach(color => {
+    Object.values(activeAnswers).forEach(color => {
       const c = color as PersonalityColor;
       if (counts[c] !== undefined) {
         counts[c] += 1;
@@ -355,13 +370,14 @@ export default function App() {
     }
 
     const tId = "AURA-TX-" + Math.floor(Math.random() * 9000 + 1000);
+    const checkoutPrice = lang === "id" ? 25000 : 5;
     const newTx: Transaction = {
       id: tId,
       userId: currentUser?.id || "user-cur",
       userName: currentUser?.name || profile.name || "Klien Guest",
       userEmail: currentUser?.emailOrPhone || "client@gmail.com",
       date: new Date().toISOString(),
-      amount: 49000,
+      amount: checkoutPrice,
       paymentMethod: selectedPayMethod,
       status: "Pending",
       whatsappNumber: userWaNumber,
@@ -387,14 +403,15 @@ export default function App() {
 
   // WhatsApp Message notification dispatch builder
   const handleWhatsAppSend = (tx: Transaction) => {
+    const formattedAmount = formatAmount(tx.amount);
     const textMsg = lang === "id"
       ? `Halo Admin Aura. Saya baru saja melakukan pembayaran Premium Character Report.\n\n` + 
         `ID Pesanan: ${tx.id}\nNama: ${tx.userName}\nNomor WA: ${tx.whatsappNumber}\n` +
-        `Metode: ${tx.paymentMethod}\nJumlah: Rp 49.000\nCatatan: ${tx.notes}\n\n` +
+        `Metode: ${tx.paymentMethod}\nJumlah: ${formattedAmount}\nCatatan: ${tx.notes}\n\n` +
         `Mohon segera verifikasi transaksi saya!`
       : `Hello Aura Admin. I have made a transfer for Premium Character Report.\n\n` + 
         `Order ID: ${tx.id}\nName: ${tx.userName}\nPhone: ${tx.whatsappNumber}\n` +
-        `Method: ${tx.paymentMethod}\nAmount: Rp 49.000\nNotes: ${tx.notes}\n\n` +
+        `Method: ${tx.paymentMethod}\nAmount: ${formattedAmount}\nNotes: ${tx.notes}\n\n` +
         `Please approve my transaction as soon as possible!`;
 
     const encoded = encodeURIComponent(textMsg);
@@ -1346,11 +1363,11 @@ export default function App() {
                     <span>{translations[lang].btnPrev}</span>
                   </button>
 
-                  {/* Submit Analysis displays once answers filled */}
-                  {Object.keys(answers).length === questionsList.length ? (
+                  {/* Submit Analysis displays once answers filled or if on the last question with an answer selected */}
+                  {(Object.keys(answers).length === questionsList.length || (currentQuestionIdx === questionsList.length - 1 && answers[currentQuestionIdx] !== undefined)) ? (
                     <button
-                      onClick={computeAnalysis}
-                      className="inline-flex items-center gap-2 bg-emerald-600 text-white font-extrabold px-6 py-3 rounded-xl hover:bg-emerald-700 shadow-md transition-all uppercase text-xs"
+                      onClick={() => computeAnalysis()}
+                      className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg transition-all uppercase text-xs animate-pulse"
                       id="btn-quiz-finish-submit"
                     >
                       <CheckCircle className="w-4 h-4" />
@@ -1358,7 +1375,7 @@ export default function App() {
                     </button>
                   ) : (
                     <span className="text-[11px] font-bold text-slate-400">
-                      {lang === "id" ? "Pilih salah satu jawaban diatas" : "Choose an option above to progress"}
+                      {lang === "id" ? "Pilih salah satu jawaban di atas" : "Choose an option above to progress"}
                     </span>
                   )}
                 </div>
@@ -1642,7 +1659,7 @@ export default function App() {
                             {lang === "id" ? "Pesanan Menunggu Verifikasi Manual Owner" : "Order Awaiting Manual Verification"}
                           </h4>
                           <p className="text-xs text-indigo-300 font-mono tracking-tight mt-0.5">
-                            ID: {activeOrderPending.id} • Laporan Jodoh & Karir 100+ Hlm • Rp 49.000
+                            ID: {activeOrderPending.id} • {lang === "id" ? "Laporan Jodoh & Karir 100+ Hlm" : "100+ Pgs Relationship & Career Report"} • {formatAmount(activeOrderPending.amount)}
                           </p>
                         </div>
                       </div>
@@ -1907,7 +1924,7 @@ export default function App() {
                         </div>
                         <h4 className="font-bold text-sm text-slate-800">Premium Character Report 100+ Hlm</h4>
                         <p className="text-xs text-slate-500">
-                          {lang === "id" ? "Metode Pembayaran:" : "Gateway:"} {t.paymentMethod} • Rp {t.amount.toLocaleString()}
+                          {lang === "id" ? "Metode Pembayaran:" : "Gateway:"} {t.paymentMethod} • {formatAmount(t.amount)}
                         </p>
                         <p className="text-[10px] text-slate-400 font-mono">
                           {new Date(t.date).toLocaleString()}
@@ -1987,7 +2004,7 @@ export default function App() {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{translations[lang].totalSales}</p>
-                      <p className="text-lg font-black text-slate-800 mt-0.5" id="stats-revenue">Rp {totalSalesRevenue.toLocaleString()}</p>
+                      <p className="text-lg font-black text-slate-800 mt-0.5" id="stats-revenue">{formatAmount(totalSalesRevenue)}</p>
                     </div>
                   </div>
 
@@ -2083,7 +2100,7 @@ export default function App() {
                               <td className="py-4">
                                 <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded font-bold text-[9px] uppercase">{t.paymentMethod}</span>
                               </td>
-                              <td className="py-4 text-right font-bold text-slate-800">Rp {t.amount.toLocaleString()}</td>
+                              <td className="py-4 text-right font-bold text-slate-800">{formatAmount(t.amount)}</td>
                               <td className="py-4 text-slate-500 max-w-[150px] truncate" title={t.notes}>{t.notes || "-"}</td>
                               <td className="py-4 text-center">
                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
