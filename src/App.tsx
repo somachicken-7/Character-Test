@@ -41,6 +41,14 @@ import { translations, questionsList, questionStrings } from "./translations";
 import NotificationToast from "./components/NotificationToast";
 import { iqQuestions } from "./iqTestData";
 import { psyQuestions } from "./psyTestData";
+import PremiumTeaserBlock from "./components/PremiumTeaserBlock";
+import { 
+  signInWithGoogleSheets, 
+  logUserToGoogleSheets, 
+  logTransactionToGoogleSheets, 
+  getSheetsAccessToken, 
+  setSheetsAccessToken 
+} from "./googleSheets";
 
 export default function App() {
   // Locale State
@@ -326,6 +334,9 @@ export default function App() {
 
   // Simulated current User Premium subscription state
   const [isPremiumUser, setIsPremiumUser] = useState(false);
+
+  // Google Sheets database state
+  const [isSheetsConnected, setIsSheetsConnected] = useState(!!getSheetsAccessToken());
 
   // UI state for Premium payment dialog / actions
   const [showPremiumModal, setShowPremiumModal] = useState(false);
@@ -678,9 +689,15 @@ export default function App() {
     } else if (score >= 90) {
       level = "Rata-rata (Average)";
       levelEn = "Average";
+    } else if (score >= 80) {
+      level = "Di Bawah Rata-rata (Below Average)";
+      levelEn = "Below Average";
+    } else if (score >= 70) {
+      level = "Batas Lambat Belajar (Borderline)";
+      levelEn = "Borderline";
     } else {
-      level = "Rata-rata Rendah (Low Average)";
-      levelEn = "Low Average";
+      level = "Sangat Rendah (Extremely Low)";
+      levelEn = "Extremely Low";
     }
 
     setIqResult({
@@ -800,6 +817,10 @@ export default function App() {
     const newTxList = [newTx, ...transactions];
     setTransactions(newTxList);
     localStorage.setItem("aura_transactions", JSON.stringify(newTxList));
+
+    // Send new transaction directly to Google Sheets database if connected
+    logTransactionToGoogleSheets(newTx).catch(console.error);
+
     setActiveOrderPending(newTx);
     setShowPremiumModal(false);
 
@@ -894,6 +915,10 @@ export default function App() {
 
     // If verified active user as success, unlock premiums
     const targetTx = updated.find(t => t.id === id);
+    if (targetTx) {
+      logTransactionToGoogleSheets(targetTx).catch(console.error);
+    }
+
     if (newStatus === "Success") {
       setIsPremiumUser(true);
       localStorage.setItem("aura_premium_unlocked", "true");
@@ -901,6 +926,61 @@ export default function App() {
     } else {
       showToast(lang === "id" ? `Pesanan ${id} ditolak.` : `Order ${id} set to failed.`);
     }
+  };
+
+  const handleConnectSheets = async () => {
+    try {
+      const { user, token } = await signInWithGoogleSheets();
+      setIsSheetsConnected(true);
+      showToast(lang === "id" ? `Sukses terhubung dengan Google Sheets! Akun: ${user.email} 📊` : `Connected Google Sheets successfully with: ${user.email} 📊`);
+      
+      // Auto trigger full sync of existing records
+      setTimeout(() => {
+        handleSyncAllToSheets(token);
+      }, 500);
+    } catch (e: any) {
+      console.error(e);
+      showToast(lang === "id" ? "Gagal menyambungkan ke Google Sheets: " + e.message : "Failed to connect Google Sheets: " + e.message);
+    }
+  };
+
+  const handleSyncAllToSheets = async (forcedToken?: string) => {
+    const token = forcedToken || getSheetsAccessToken();
+    if (!token) {
+      showToast(lang === "id" ? "Hubungkan Google Sheets terlebih dahulu!" : "Please connect Google Sheets first!");
+      return;
+    }
+
+    showToast(lang === "id" ? "Memulai rekap data massal ke Google Sheets..." : "Initiating batch sync to Google Sheets...");
+
+    let successCountUsers = 0;
+    let successCountTx = 0;
+
+    // Log all participants sequentially to prevent rate limits
+    for (const u of allUsers) {
+      try {
+        const ok = await logUserToGoogleSheets(u);
+        if (ok) successCountUsers++;
+      } catch (err) {
+        console.error("Error logging user:", err);
+      }
+    }
+
+    // Log all transactions sequentially
+    for (const t of transactions) {
+      try {
+        const ok = await logTransactionToGoogleSheets(t);
+        if (ok) successCountTx++;
+      } catch (err) {
+        console.error("Error logging transaction:", err);
+      }
+    }
+
+    showToast(
+      lang === "id"
+        ? `Sinkronisasi Selesai! ${successCountUsers} peserta login & ${successCountTx} transaksi berhasil direkap.`
+        : `Sync complete! Recorded ${successCountUsers} participants & ${successCountTx} transactions successfully on your sheet.`
+    );
   };
 
   // Simulated export to Excel / CSV monthly financial ledger
@@ -940,6 +1020,11 @@ export default function App() {
 
   // PDF Export Print Dialog trigger
   const handleTriggerPrint = () => {
+    if (!isPremiumUser) {
+      showToast(lang === "id" ? "Fitur Ekspor PDF dikunci untuk premium saja. Silakan upgrade ke Premium!" : "PDF Export feature is locked. Please upgrade to Premium!");
+      setShowPremiumModal(true);
+      return;
+    }
     window.print();
   };
 
@@ -1272,6 +1357,9 @@ export default function App() {
                       setAllUsers(updatedList);
                       localStorage.setItem("aura_all_users", JSON.stringify(updatedList));
 
+                      // Real-time record to Google Sheet Database
+                      logUserToGoogleSheets(newUser).catch(console.error);
+
                       setCurrentUser(newUser);
                       localStorage.setItem("aura_current_user", JSON.stringify(newUser));
                       setProfile(prev => ({ ...prev, name: newUser.name }));
@@ -1290,6 +1378,9 @@ export default function App() {
                         setCurrentUser(userFound);
                         localStorage.setItem("aura_current_user", JSON.stringify(userFound));
                         setProfile(prev => ({ ...prev, name: userFound.name }));
+
+                        // Log active user session details to Google Sheet Database
+                        logUserToGoogleSheets(userFound).catch(console.error);
                         
                         setAuthEmail("");
                         setAuthPassword("");
@@ -2101,8 +2192,10 @@ export default function App() {
                     </div>
                   </section>
 
-                  {/* Detail stats bento blocks grid derived from design instructions */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {isPremiumUser ? (
+                    <>
+                      {/* Detail stats bento blocks grid derived from design instructions */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     
                     <div className="bg-white p-5 rounded-3xl shadow-sm border border-indigo-50 hover:shadow transition-all group">
                       <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
@@ -2897,6 +2990,10 @@ export default function App() {
                       )}
                     </div>
                   </div>
+                    </>
+                  ) : (
+                    <PremiumTeaserBlock lang={lang} onUpgrade={() => setShowPremiumModal(true)} />
+                  )}
 
                   {/* Order ticker simulator */}
                   {activeOrderPending && (
@@ -3818,7 +3915,7 @@ export default function App() {
                   </div>
 
                   {/* Operational Export buttons */}
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-3">
                     <button 
                       onClick={handleExportLedger}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2"
@@ -3827,6 +3924,44 @@ export default function App() {
                       <FileSpreadsheet className="w-4 h-4" />
                       <span>{translations[lang].exportMonthlyLedger}</span>
                     </button>
+
+                    {/* Google Sheets Live Database Connection Panel */}
+                    <div className="flex items-center gap-2 border border-emerald-100 bg-emerald-50/40 p-1 rounded-xl shadow-xs">
+                      {!isSheetsConnected ? (
+                        <button
+                          onClick={handleConnectSheets}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                        >
+                          <FileSpreadsheet className="w-3.5 h-3.5" />
+                          <span>Hubungkan Google Sheets</span>
+                        </button>
+                      ) : (
+                        <>
+                          <span className="flex items-center gap-1.5 text-[11px] font-black text-emerald-700 px-2 py-1 bg-emerald-100/60 rounded-lg">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Live Rekap Aktif
+                          </span>
+                          <button
+                            onClick={() => handleSyncAllToSheets()}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] px-3 py-1.5 rounded-lg transition-all flex items-center gap-1"
+                            title="Sync seluruh transaksi & peserta ke Google Sheets"
+                          >
+                            <span>Sync Semua</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSheetsAccessToken(null);
+                              setIsSheetsConnected(false);
+                              showToast("Google Sheets disconnected.");
+                            }}
+                            className="hover:bg-rose-100 text-rose-600 p-1.5 rounded-lg transition-all"
+                            title="Disconnect Google Sheets"
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
 
                     <button 
                       onClick={() => {
@@ -4344,6 +4479,9 @@ export default function App() {
                   setAllUsers(updatedList);
                   localStorage.setItem("aura_all_users", JSON.stringify(updatedList));
                 }
+
+                // Log other Google registrations or active sessions
+                logUserToGoogleSheets(existing).catch(console.error);
 
                 setCurrentUser(existing);
                 localStorage.setItem("aura_current_user", JSON.stringify(existing));
