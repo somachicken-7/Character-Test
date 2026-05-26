@@ -71,10 +71,11 @@ export const appendRowToSheet = async (
   }
 
   try {
-    // Attempt appending to specified sheet page
+    // Attempt appending to specified sheet page using server-side endpoint proxy
     const range = `${sheetName}!A:Z`;
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
     const response = await fetch(
-      `https://sheets.googleapis.com/v1/spreadsheets/${TARGET_SPREADSHEET_ID}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`,
+      `${origin}/api/sheets/append`,
       {
         method: "POST",
         headers: {
@@ -82,6 +83,9 @@ export const appendRowToSheet = async (
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
+          spreadsheetId: TARGET_SPREADSHEET_ID,
+          range: range,
+          valueInputOption: "USER_ENTERED",
           values: [rowValues]
         })
       }

@@ -12,6 +12,19 @@ const PORT = 3000;
 
 app.use(express.json());
 
+// CORS and Preflight handler middleware
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept");
+  res.setHeader("Access-Control-Max-Age", "86400"); // 24 hours cache for preflight
+  
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
+
 // Initialize Gemini SDK with telemetry header
 const getGeminiClient = () => {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -29,6 +42,45 @@ const getGeminiClient = () => {
 };
 
 const ai = getGeminiClient();
+
+// Server-side API proxy for Google Sheets to prevent client-side CORS/fetch limitations
+app.post("/api/sheets/append", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: "Missing authorization header" });
+    }
+
+    const { spreadsheetId, range, valueInputOption, values } = req.body;
+    if (!spreadsheetId || !range || !values) {
+      return res.status(400).json({ error: "Missing required parameters: spreadsheetId, range, or values" });
+    }
+
+    // Call Sheets API from server context where CORS doesn't apply
+    const sheetsUrl = `https://sheets.googleapis.com/v1/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=${valueInputOption || "USER_ENTERED"}`;
+
+    const response = await fetch(sheetsUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": authHeader,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ values })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("[GSheets Server Proxy Error]:", response.status, errorText);
+      return res.status(response.status).json({ error: errorText });
+    }
+
+    const data = await response.json();
+    return res.json(data);
+  } catch (err: any) {
+    console.error("[GSheets Server Proxy Exception]:", err);
+    return res.status(500).json({ error: err.message || "Unknown server error routing to Google Sheets" });
+  }
+});
 
 // API endpoint for Premium Character Consultant powered by Gemini
 app.post("/api/consult", async (req, res) => {
